@@ -1,0 +1,2 @@
+Available Sentinel 2 L2A bands: https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/S2L2A.html#available-bands-and-data
+				https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/bands/
