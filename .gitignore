@@ -1,2 +1,5 @@
 # Datasets
 *.tiff
+
+# Logs
+*.log
