@@ -1,0 +1,9 @@
+[ 2025-01-28 15:41:53,254 ] 67 root - INFO - Entered the data ingestion method or component
+[ 2025-01-28 15:41:54,094 ] 78 root - INFO - Client opened
+[ 2025-01-28 15:41:54,329 ] 88 root - INFO - Items satisfying criteria searched
+[ 2025-01-28 15:41:56,545 ] 96 root - INFO - Items signed with the Planetary Computer API
+[ 2025-01-28 15:42:30,705 ] 115 root - INFO - Median over the time dimension computed for every band in the dataset
+[ 2025-01-28 15:42:30,732 ] 121 root - INFO - NDVI index computed
+[ 2025-01-28 15:42:30,754 ] 126 root - INFO - NDBI index computed
+[ 2025-01-28 15:42:30,774 ] 131 root - INFO - NDWI index computed
+[ 2025-01-28 15:42:30,786 ] 158 root - INFO - Transformation to the EPSG:4326 CRS finished

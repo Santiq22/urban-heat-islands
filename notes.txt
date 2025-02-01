@@ -1,2 +1,18 @@
 Available Sentinel 2 L2A bands: https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/S2L2A.html#available-bands-and-data
 				https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/bands/
+
+List of Sentinel 2 indices: https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/indexdb/
+			    https://www.nv5geospatialsoftware.com/docs/BroadbandGreenness.html#Renormal
+
+Best Sentinel 2 indices to use: NDVI, gNDVI, BWDRVI, CCCI?, NDBI, NDWI, CTVI, Datt1?, MSAVI, PVR, PSNDc2, SIWSI, BNDVI, PNDVI, VARI, TDVI
+
+Building_Footprint.kml
+
+Error en un elemento.
+• El elemento tiene un anillo lineal que no tiene un mínimo de tres coordenadas únicas para formar un polígono cerrado, y se ha colocado en las coordenadas 0,0.
+Error en un elemento.
+• El elemento tiene un anillo lineal que no tiene un mínimo de tres coordenadas únicas para formar un polígono cerrado, y se ha colocado en las coordenadas 0,0.
+
+ChatGPT query:
+
+Hi! Let's suppose I have a .kml file that I want to load using Pykml. This file is built based on polygons. Also, let's suppose I have a point on planet Earth represented using latitude and longitude values. I want to associate such a point to the corresponding polygon, in case it belongs to it. Could you give me the Python code to do that?
