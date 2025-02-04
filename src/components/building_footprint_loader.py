@@ -1,3 +1,4 @@
+from numpy import argmin, array
 from pykml import parser
 from shapely.geometry import Point, Polygon
 import xml.etree.ElementTree as ET
@@ -29,29 +30,43 @@ def parse_kml(kml_file):
     
     return polygons
 
-"""# Function to check if point is inside any polygon
-def check_point_in_polygon(point, polygons):
-    # Create a Shapely Point object
-    point = Point(point)  # point = (longitude, latitude)
+def associate_point_to_polygon(input_points, polygons):
+    """
+    Function to associate a given (Lon, Lat) to a Polygon object. 
+    Its closeness is defined as the closest Polygon's centroid. The 
+    function returns a (N, 2) array containing the area and perimeter, 
+    respectively, of the Polygon associated with (Lon, Lat).
+    ------------------------------------------------------------
+    - points: (N, 2) numpy array representing (Lon, Lat) points. 
+    - polygons: (M, 2) list containing all the Polygons objects 
+    defined from the Bulding_Footprint.kml file.
+    ------------------------------------------------------------
+    """
     
-    # Check if the point lies within any polygon
-    for i, polygon in enumerate(polygons):
-        if polygon.contains(point):
-            print(f"Point is inside Polygon {i+1}")
-            return i + 1  # Return the index of the polygon
-    print("Point is outside all polygons")
-    return None
+    # Create Shapely Point objects
+    points = [Point(coord) for coord in input_points]
+    
+    # Areas and perimeters list
+    area_and_perimeter = []
+    
+    # Check which point is closest to the centroid of a polygon
+    for point in points:
+        # Compute the distance between the point and the centroids
+        d = array([p.centroid.distance(point) for p in polygons])
 
-# Example usage
-kml_file = 'your_file.kml'  # Replace with your .kml file path
-latitude = 37.7749          # Replace with your latitude
-longitude = -122.4194       # Replace with your longitude
-
-# Parse the KML file and extract polygons
-polygons = parse_kml(kml_file)
-
-# Check if the point (longitude, latitude) is inside any polygon
-check_point_in_polygon((longitude, latitude), polygons)"""
+        # Check which distance is the smallest
+        idx_min = argmin(d)
+        
+        # Get area and perimeter from the corresponding polygon
+        polygon_area, polygon_perimeter = polygons[idx_min].area, polygons[idx_min].length
+        
+        # Append the area and perimeter values
+        area_and_perimeter.append([polygon_area, polygon_perimeter])
+        
+    # Convert the list of areas and perimeters into a numpy array
+    area_and_perimeter = array(area_and_perimeter)
+    
+    return area_and_perimeter
 
 
 kml_file = '../../data/Building_Footprint.kml'
@@ -60,7 +75,11 @@ idx = 100
 p = parse_kml(kml_file)
 print(len(p), "\n")
 print(p[idx], "\n")
-print(p[idx].is_closed, "\n")
+#print(p[idx].is_closed, "\n")
 print(p[idx].area, "\n")
-print(p[idx].length, "\n")
-print(p[idx].point_on_surface(), "\n")
+#print(p[idx].length, "\n")
+#print(p[idx].point_on_surface(), "\n")
+#for c in p[idx].exterior.coords:
+#    print(c)
+print(p[idx].centroid)
+print(p[idx:idx + 3].centroid.distance(p[idx + 5].centroid))
