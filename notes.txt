@@ -4,7 +4,7 @@ Available Sentinel 2 L2A bands: https://documentation.dataspace.copernicus.eu/AP
 List of Sentinel 2 indices: https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/indexdb/
 			    https://www.nv5geospatialsoftware.com/docs/BroadbandGreenness.html#Renormal
 
-Best Sentinel 2 indices to use: NDVI, gNDVI, BWDRVI, CCCI?, NDBI, NDWI, CTVI, Datt1?, MSAVI, PVR, PSNDc2, SIWSI, BNDVI, PNDVI, VARI, TDVI
+Best Sentinel 2 indices to use: NDVI, gNDVI, NDBI, NDWI, BWDRVI, CCCI, CTVI, Datt1, Fe2+, Ferric Oxides, Ferrous Silicates, mSR, MSAVI, PVR, PSNDc2, SIWSI, NDMI, NBR, BNDVI, Median SI, RBNDVI, SRSWIRI/NIR, SBL, wetness, SIPI1, PNDVI, VARI, TDVI, EVI
 
 Building_Footprint.kml
 
@@ -16,3 +16,11 @@ Error en un elemento.
 ChatGPT query:
 
 Hi! Let's suppose I have a .kml file that I want to load using Pykml. This file is built based on polygons. Also, let's suppose I have a point on planet Earth represented using latitude and longitude values. I want to associate such a point to the corresponding polygon, in case it belongs to it. Could you give me the Python code to do that?
+
+Agregate Azimut and Height of the Sun
+
+Since we are working on a summer date, EDT (Eastern Deaylight Time) = UTC - 4
+
+This web page computes the physical area of a polygon, but it is a private application, you have to pay if you want to use it: https://www.earthpoint.us/shapes.aspx
+
+Another potential importan variable is the population density in the region of interest.

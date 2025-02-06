@@ -12,10 +12,10 @@ sys.path.insert(0, os.path.join(os.getcwd(), '../', '../'))
 from src.exception import CustomException
 from src.logger import logging
 import pandas as pd
+import numpy as np
 from dataclasses import dataclass
 
 # Import common GIS tools
-import numpy as np
 import xarray as xr
 import rioxarray as rio
 import rasterio
@@ -59,7 +59,7 @@ class DataIngestion:
         # Pixel resolution for the final product
         self.resolution = resolution                                             # Meters per pixel
         
-        # 
+        # Bands to do the searching
         self.bands = bands
         
     def initiate_data_ingestion(self):
@@ -117,18 +117,53 @@ class DataIngestion:
             # ------------------------- Computation of different filters --------------------------
             # Calculate NDVI for the median mosaic
             ndvi_median = (median.B08 - median.B04)/(median.B08 + median.B04)
-            
             logging.info("NDVI index computed")
+            
+            # Calculate gNDVI for the median mosaic
+            gndvi_median = (median.B08 - median.B03)/(median.B08 + median.B03)
+            logging.info("gNDVI index computed")
             
             # Calculate NDBI for the median mosaic
             ndbi_median = (median.B11 - median.B08)/(median.B11 + median.B08)
-            
             logging.info("NDBI index computed")
             
             # Calculate NDWI for the median mosaic
             ndwi_median = (median.B03 - median.B08)/(median.B03 + median.B08)
-            
             logging.info("NDWI index computed")
+            
+            # Calculate BWDRVI for the median mosaic
+            bwdrvi_median = (0.1*median.B08 - median.B02)/(0.1*median.B08 + median.B02)
+            logging.info("BWDRVI index computed")
+            
+            # Calculate CCCI for the median mosaic
+            ccci_median = (median.B08 - median.B05)/(median.B08 + median.B05)*(median.B08 + median.B04)/(median.B08 - median.B04)
+            # Replace infs and -infs by NaNs
+            ccci_median = ccci_median.where(ccci_median.values != -np.inf)
+            ccci_median = ccci_median.where(ccci_median.values != np.inf)
+            # Replace NaNs by 0.0
+            ccci_median.fillna(0.0)
+            logging.info("CCCI index computed")
+            
+            # Calculate CTVI for the median mosaic
+            ctvi_median = (ndvi_median + 0.5)/abs(ndvi_median + 0.5)*np.sqrt(abs(ndvi_median + 0.5))
+            logging.info("CTVI index computed")
+            
+            # Calculate Datt1 for the median mosaic
+            datt1_median = (median.B08 - median.B05)/(median.B08 - median.B04)
+            # Replace infs and -infs by NaNs
+            datt1_median = datt1_median.where(datt1_median.values != -np.inf)
+            datt1_median = datt1_median.where(datt1_median.values != np.inf)
+            # Replace NaNs by 0.0
+            datt1_median.fillna(0.0)
+            logging.info("Datt1 index computed")
+            
+            # Calculate Fe2+ for the median mosaic
+            fe2_median = median.B12/median.B08 + median.B03/median.B04
+            logging.info("Fe2+ index computed")
+            
+            # Calculate Ferric Oxides for the median mosaic
+            fo_median = median.B11/median.B08
+            logging.info("Ferric Oxides index computed")
             # -------------------------------------------------------------------------------------            
             
             # Calculate the dimensions of the output file
@@ -143,40 +178,59 @@ class DataIngestion:
             
             # Write the CRS to the dataset in a CF compliant manner. It returns a modified dataset 
             # with CF compliant CRS information.
-            median.rio.write_crs("epsg:4326", inplace = True)
             ndvi_median.rio.write_crs("epsg:4326", inplace = True)
+            gndvi_median.rio.write_crs("epsg:4326", inplace = True)
             ndbi_median.rio.write_crs("epsg:4326", inplace = True)
             ndwi_median.rio.write_crs("epsg:4326", inplace = True)
+            bwdrvi_median.rio.write_crs("epsg:4326", inplace = True)
+            ccci_median.rio.write_crs("epsg:4326", inplace = True)
+            ctvi_median.rio.write_crs("epsg:4326", inplace = True)
+            datt1_median.rio.write_crs("epsg:4326", inplace = True)
+            fe2_median.rio.write_crs("epsg:4326", inplace = True)
+            fo_median.rio.write_crs("epsg:4326", inplace = True)
             
             # Write the GeoTransform to the dataset where GDAL can read it in. It returns a modified 
             # dataset with GeoTransform written.
-            median.rio.write_transform(transform = gt, inplace = True)
             ndvi_median.rio.write_transform(transform = gt, inplace = True)
+            gndvi_median.rio.write_transform(transform = gt, inplace = True)
             ndbi_median.rio.write_transform(transform = gt, inplace = True)
             ndwi_median.rio.write_transform(transform = gt, inplace = True)
+            bwdrvi_median.rio.write_transform(transform = gt, inplace = True)
+            ccci_median.rio.write_transform(transform = gt, inplace = True)
+            ctvi_median.rio.write_transform(transform = gt, inplace = True)
+            datt1_median.rio.write_transform(transform = gt, inplace = True)
+            fe2_median.rio.write_transform(transform = gt, inplace = True)
+            fo_median.rio.write_transform(transform = gt, inplace = True)
             
             logging.info("Transformation to the EPSG:4326 CRS finished")
             
             # Create the GeoTIFF output file using the defined parameters 
             with rasterio.open(self.ingestion_config.raw_data_path, 'w', driver = 'GTiff', width = width, 
-                               height = height, crs = 'epsg:4326', transform = gt, count = 15, 
+                               height = height, crs = 'epsg:4326', transform = gt, count = &&&&&&, 
                                compress = 'lzw', dtype = 'float64') as dst:
                 # Save the raw data in its path
-                dst.write(median.B01, 1)
-                dst.write(median.B02, 2)
-                dst.write(median.B03, 3)
-                dst.write(median.B04, 4)
-                dst.write(median.B05, 5)
-                dst.write(median.B06, 6)
-                dst.write(median.B07, 7) 
-                dst.write(median.B08, 8)
-                dst.write(median.B8A, 9)
-                dst.write(median.B09, 10)
-                dst.write(median.B11, 11)
-                dst.write(median.B12, 12)
-                dst.write(ndvi_median, 13)
-                dst.write(ndbi_median, 14)
-                dst.write(ndwi_median, 15)                
+                dst.write(ndvi_median, 1)
+                dst.write(gndvi_median, 2)
+                dst.write(ndbi_median, 3)
+                dst.write(ndwi_median, 4)
+                dst.write(bwdrvi_median, 5)
+                dst.write(ccci_median, 6)
+                dst.write(ctvi_median, 7)
+                dst.write(datt1_median, 8)
+                dst.write(fe2_median, 9)
+                dst.write(fo_median, 10)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
+                dst.write(ndwi_median, 4)
                 dst.close()
             
             logging.info("Raw data saved as .tiff files")
