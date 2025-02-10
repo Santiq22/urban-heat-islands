@@ -4,7 +4,9 @@ Available Sentinel 2 L2A bands: https://documentation.dataspace.copernicus.eu/AP
 List of Sentinel 2 indices: https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/indexdb/
 			    https://www.nv5geospatialsoftware.com/docs/BroadbandGreenness.html#Renormal
 
-Best Sentinel 2 indices to use: NDVI, gNDVI, NDBI, NDWI, BWDRVI, CCCI, CTVI, Datt1, Fe2+, Ferric Oxides, Ferrous Silicates, mSR, MSAVI, PVR, PSNDc2, SIWSI, NDMI, NBR, BNDVI, Median SI, RBNDVI, SRSWIRI/NIR, SBL, wetness, SIPI1, PNDVI, VARI, TDVI, EVI
+Available Landsat 8 bands: https://custom-scripts.sentinel-hub.com/landsat-8/bands/
+
+Best Sentinel 2 indices to use: NDVI, gNDVI, NDBI, NDWI, BWDRVI, CCCI, CTVI, Datt1, Fe2+, Ferric Oxides, Ferrous Silicates, mSR, MSAVI, PVR, PSNDc2, SIWSI, NDMI, BNDVI, NBR, PNDVI, Median SI, RBNDVI, SRSWIRI/NIR, SBL, wetness, SIPI1, VARI, TDVI, EVI
 
 Building_Footprint.kml
 
@@ -24,3 +26,9 @@ Since we are working on a summer date, EDT (Eastern Deaylight Time) = UTC - 4
 This web page computes the physical area of a polygon, but it is a private application, you have to pay if you want to use it: https://www.earthpoint.us/shapes.aspx
 
 Another potential importan variable is the population density in the region of interest.
+
+We can compute the spatial moving mean of indeces instead of using the velue of the index on the given pixel (Check red comment in Shandas et al. 2019).
+
+Fix the algorithm that computes the area and perimeter of polygons for points in, e.g., Central Park or water places.
+It is better to put a cut-off of, e.g., 100 m. If there is no building closer than 100 m to the given (Lat, Lon) point,
+then assigns 0 to the value of the area and perimeter.

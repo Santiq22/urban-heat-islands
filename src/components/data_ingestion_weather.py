@@ -10,7 +10,7 @@ import pandas as pd
 from astropy.time import Time
 from astropy.coordinates import get_sun, AltAz, EarthLocation
 import astropy.units as u
-from datetime import datetime
+#from datetime import datetime
 # =============================================================================================== #
 
 # ======================================== Main classes ========================================= #
@@ -55,7 +55,7 @@ class DataIngestion:
             df_b[df_b.columns[0]] = pd.to_datetime(df_b[df_b.columns[0]])
             df_m[df_m.columns[0]] = pd.to_datetime(df_m[df_m.columns[0]])
             
-            logging.info("Data correctly transformed to datatime objects")
+            logging.info("Data correctly transformed to datetime objects")
 
             # Set time
             times = Time(df_m[df_m.columns[0]]) - self.utcoffset
@@ -92,21 +92,21 @@ class DataIngestion:
                                   df_m.columns[2] : "relative_humidity_manhattan [percent]",
                                   df_m.columns[3] : "avg_wind_speed_manhattan [m/s]",
                                   df_m.columns[4] : "wind_direction_manhattan [degrees]",
-                                  df_m.columns[5] : "solar_flux_manhattan [W/m^2]"})
+                                  df_m.columns[5] : "solar_flux_manhattan [W/m^2]"}, inplace = True)
             
             df_b.rename(columns = {df_b.columns[1] : "air_temperature_at_surface_bronx [degC]",
                                   df_b.columns[2] : "relative_humidity_bronx [percent]",
                                   df_b.columns[3] : "avg_wind_speed_bronx [m/s]",
                                   df_b.columns[4] : "wind_direction_bronx [degrees]",
-                                  df_b.columns[5] : "solar_flux_bronx [W/m^2]"})
+                                  df_b.columns[5] : "solar_flux_bronx [W/m^2]"}, inplace = True)
             
             # Concatenate both datasets so we have a unique set of data
             df_conc = pd.concat((df_m, df_b.drop(columns = [df_b.columns[0]])), axis = 1)
             
             # Save the final dataset
-            df_conc.to_csv(self.ingestion_config.data_path)
+            df_conc.to_csv(self.ingestion_config.data_path, index=False)
             
-            logging.info("Data saved as .csv files")
+            logging.info("Data saved as a .csv file")
             
             logging.info("Ingestion of the data completed")
             
