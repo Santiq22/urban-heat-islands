@@ -32,3 +32,5 @@ We can compute the spatial moving mean of indeces instead of using the velue of 
 Fix the algorithm that computes the area and perimeter of polygons for points in, e.g., Central Park or water places.
 It is better to put a cut-off of, e.g., 100 m. If there is no building closer than 100 m to the given (Lat, Lon) point,
 then assigns 0 to the value of the area and perimeter.
+
+Processing COPC Data with PDAL, STAC, and Planetary Computer: https://github.com/microsoft/PlanetaryComputerExamples/blob/main/datasets/3dep-lidar/3dep-lidar-copc-example.ipynb

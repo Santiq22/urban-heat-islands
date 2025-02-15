@@ -14,7 +14,7 @@ from src.logger import logging
 from dataclasses import dataclass
 
 # Data Science
-import pandas as pd
+from pandas import read_csv, DataFrame
 
 # Geospatial raster data handling
 import rioxarray as rxr
@@ -24,25 +24,24 @@ from pyproj import Proj, Transformer
 
 # Others
 from tqdm import tqdm
-
-#from data_transformation import DataTransformation
 # =============================================================================================== #
 
 # ======================================== Main classes ========================================= #
 @dataclass
 class DataConvertionConfig:
-    # Path to output datasets
-    csv_data_path: str = os.path.join('../../data', 'sentinel_data.csv')
+    def __init__(self, dataset):    
+        # Path to output dataset
+        self.csv_data_path: str = os.path.join('../../data', dataset+'_sentinel_data.csv')
     
 class DataConvertion:
-    def __init__(self, tiff_path, csv_path):
+    def __init__(self, tiff_path, csv_path, type_of_dataset):
         # This variable will consist in the input I need to initialize
-        self.convertion_config = DataConvertionConfig()
+        self.convertion_config = DataConvertionConfig(type_of_dataset)
         
         # Path to raw .tiff data
         self.tiff_path = tiff_path
         
-        # Path to base training .csv data
+        # Path to base training .csv or test .csv data
         self.csv_path = csv_path
         
     def initiate_data_convertion(self):
@@ -58,11 +57,11 @@ class DataConvertion:
             logging.info("Data loaded as xarray.Dataset")
 
             # Read the csv file using pandas
-            training_df = pd.read_csv(self.csv_path)
-            latitudes = training_df['Latitude'].values
-            longitudes = training_df['Longitude'].values
+            df = read_csv(self.csv_path)
+            latitudes = df['Latitude'].values
+            longitudes = df['Longitude'].values
             
-            logging.info("Training dataset loaded")
+            logging.info("Dataset loaded")
 
             # Convert latitudes/longitudes to the GeoTIFF's CRS
             # Create a Proj object for EPSG:4326 (WGS84 - lat/long) and the GeoTIFF's CRS
@@ -108,7 +107,7 @@ class DataConvertion:
             evi_median = []
 
             # Iterate over the latitudes and longitudes, and extract the corresponding indeces values
-            for lat, lon in tqdm(zip(latitudes, longitudes), total=len(latitudes), desc="Mapping values"):
+            for lat, lon in tqdm(zip(latitudes, longitudes), total = len(latitudes), desc = "Mapping values"):
             # Assuming the correct dimensions are 'y' and 'x' (replace these with actual names 
             # from data.coords)
             
@@ -202,43 +201,43 @@ class DataConvertion:
             logging.info("Indeces correctly loaded")
             
             # Create a DataFrame to store the band values
-            df = pd.DataFrame()
-            df['Latitude'] = latitudes
-            df['Longitude'] = longitudes
-            df['ndvi_median_res10'] = ndvi_median
-            df['gndvi_median_res10'] = gndvi_median
-            df['ndbi_median_res10'] = ndbi_median
-            df['ndwi_median_res10'] = ndwi_median
-            df['bwdrvi_median_res10'] = bwdrvi_median
-            df['ccci_median_res10'] = ccci_median
-            df['ctvi_median_res10'] = ctvi_median
-            df['datt1_median_res10'] = datt1_median
-            df['fe2_median_res10'] = fe2_median
-            df['fo_median_res10'] = fo_median
-            df['fs_median_res10'] = fs_median
-            df['msr_median_res10'] = msr_median
-            df['msavi_median_res10'] = msavi_median
-            df['pvr_median_res10'] = pvr_median
-            df['psndc2_median_res10'] = psndc2_median
-            df['siwsi_median_res10'] = siwsi_median
-            df['ndmi_median_res10'] = ndmi_median
-            df['bndvi_median_res10'] = bndvi_median
-            df['nbr_median_res10'] = nbr_median
-            df['pndvi_median_res10'] = pndvi_median
-            df['si_median_res10'] = si_median
-            df['rbndvi_median_res10'] = rbndvi_median
-            df['srswirnir_median_res10'] = srswirnir_median
-            df['sbl_median_res10'] = sbl_median
-            df['w_median_res10'] = w_median
-            df['sipi1_median_res10'] = sipi1_median
-            df['vari_median_res10'] = vari_median
-            df['tdvi_median_res10'] = tdvi_median
-            df['evi_median_res10'] = evi_median
+            df_out = DataFrame()
+            df_out['Latitude'] = latitudes
+            df_out['Longitude'] = longitudes
+            df_out['ndvi_median_res10'] = ndvi_median
+            df_out['gndvi_median_res10'] = gndvi_median
+            df_out['ndbi_median_res10'] = ndbi_median
+            df_out['ndwi_median_res10'] = ndwi_median
+            df_out['bwdrvi_median_res10'] = bwdrvi_median
+            df_out['ccci_median_res10'] = ccci_median
+            df_out['ctvi_median_res10'] = ctvi_median
+            df_out['datt1_median_res10'] = datt1_median
+            df_out['fe2_median_res10'] = fe2_median
+            df_out['fo_median_res10'] = fo_median
+            df_out['fs_median_res10'] = fs_median
+            df_out['msr_median_res10'] = msr_median
+            df_out['msavi_median_res10'] = msavi_median
+            df_out['pvr_median_res10'] = pvr_median
+            df_out['psndc2_median_res10'] = psndc2_median
+            df_out['siwsi_median_res10'] = siwsi_median
+            df_out['ndmi_median_res10'] = ndmi_median
+            df_out['bndvi_median_res10'] = bndvi_median
+            df_out['nbr_median_res10'] = nbr_median
+            df_out['pndvi_median_res10'] = pndvi_median
+            df_out['si_median_res10'] = si_median
+            df_out['rbndvi_median_res10'] = rbndvi_median
+            df_out['srswirnir_median_res10'] = srswirnir_median
+            df_out['sbl_median_res10'] = sbl_median
+            df_out['w_median_res10'] = w_median
+            df_out['sipi1_median_res10'] = sipi1_median
+            df_out['vari_median_res10'] = vari_median
+            df_out['tdvi_median_res10'] = tdvi_median
+            df_out['evi_median_res10'] = evi_median
             
             logging.info("Indeces converted to DataFrame columns")
             
             # Save the DataFrame object as csv
-            df.to_csv(self.convertion_config.csv_data_path, index=False)
+            df_out.to_csv(self.convertion_config.csv_data_path, index=False)
             
             logging.info("Dataset of indeces and lat/long values correctly saved")
             
@@ -251,10 +250,9 @@ class DataConvertion:
 
 if __name__ == "__main__":
     path_to_tiff = '../../data/raw_sentinel_data.tiff'
-    path_to_csv = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
+    #path_to_csv = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
+    path_to_csv = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
+    dataset_type = 'test'
     
-    obj = DataConvertion(path_to_tiff, path_to_csv)
+    obj = DataConvertion(path_to_tiff, path_to_csv, dataset_type)
     csv_data = obj.initiate_data_convertion()
-    
-    #data_transformation = DataTransformation()
-    #_ = data_transformation.initiate_data_transformation(raw_data)

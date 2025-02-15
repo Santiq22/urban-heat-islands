@@ -14,7 +14,7 @@ from src.logger import logging
 from dataclasses import dataclass
 
 # Data Science
-import pandas as pd
+from pandas import read_csv, DataFrame
 
 # Geospatial raster data handling
 import rioxarray as rxr
@@ -24,25 +24,24 @@ from pyproj import Proj, Transformer
 
 # Others
 from tqdm import tqdm
-
-#from data_transformation import DataTransformation
 # =============================================================================================== #
 
 # ======================================== Main classes ========================================= #
 @dataclass
 class DataConvertionConfig:
-    # Path to output datasets
-    csv_data_path: str = os.path.join('../../data', 'landsat_data.csv')
+    def __init__(self, dataset):    
+        # Path to output dataset
+        self.csv_data_path: str = os.path.join('../../data', dataset+'_landsat_data.csv')
     
 class DataConvertion:
-    def __init__(self, tiff_path, csv_path):
+    def __init__(self, tiff_path, csv_path, type_of_dataset):
         # This variable will consist in the input I need to initialize
-        self.convertion_config = DataConvertionConfig()
+        self.convertion_config = DataConvertionConfig(type_of_dataset)
         
         # Path to raw .tiff data
         self.tiff_path = tiff_path
         
-        # Path to base training .csv data
+        # Path to base training .csv or test .csv data
         self.csv_path = csv_path
         
     def initiate_data_convertion(self):
@@ -58,11 +57,11 @@ class DataConvertion:
             logging.info("Data loaded as xarray.Dataset")
 
             # Read the csv file using pandas
-            training_df = pd.read_csv(self.csv_path)
-            latitudes = training_df['Latitude'].values
-            longitudes = training_df['Longitude'].values
+            df = read_csv(self.csv_path)
+            latitudes = df['Latitude'].values
+            longitudes = df['Longitude'].values
             
-            logging.info("Training dataset loaded")
+            logging.info("Dataset loaded")
 
             # Convert latitudes/longitudes to the GeoTIFF's CRS
             # Create a Proj object for EPSG:4326 (WGS84 - lat/long) and the GeoTIFF's CRS
@@ -80,7 +79,7 @@ class DataConvertion:
             lst_median = []
 
             # Iterate over the latitudes and longitudes, and extract the corresponding indeces values
-            for lat, lon in tqdm(zip(latitudes, longitudes), total=len(latitudes), desc="Mapping values"):
+            for lat, lon in tqdm(zip(latitudes, longitudes), total = len(latitudes), desc = "Mapping values"):
             # Assuming the correct dimensions are 'y' and 'x' (replace these with actual names 
             # from data.coords)
             
@@ -90,15 +89,15 @@ class DataConvertion:
             logging.info("Indeces correctly loaded")
             
             # Create a DataFrame to store the band values
-            df = pd.DataFrame()
-            df['Latitude'] = latitudes
-            df['Longitude'] = longitudes
-            df['lst_median_res10'] = lst_median
+            df_out = DataFrame()
+            df_out['Latitude'] = latitudes
+            df_out['Longitude'] = longitudes
+            df_out['lst_median_res10'] = lst_median
             
             logging.info("Indeces converted to DataFrame columns")
             
             # Save the DataFrame object as csv
-            df.to_csv(self.convertion_config.csv_data_path, index=False)
+            df_out.to_csv(self.convertion_config.csv_data_path, index=False)
             
             logging.info("Dataset of indeces and lat/long values correctly saved")
             
@@ -111,10 +110,9 @@ class DataConvertion:
 
 if __name__ == "__main__":
     path_to_tiff = '../../data/raw_landsat_data.tiff'
-    path_to_csv = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
+    #path_to_csv = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
+    path_to_csv = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
+    dataset_type = 'test'
     
-    obj = DataConvertion(path_to_tiff, path_to_csv)
+    obj = DataConvertion(path_to_tiff, path_to_csv, dataset_type)
     csv_data = obj.initiate_data_convertion()
-    
-    #data_transformation = DataTransformation()
-    #_ = data_transformation.initiate_data_transformation(raw_data)
