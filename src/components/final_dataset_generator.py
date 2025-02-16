@@ -22,10 +22,11 @@ from datetime import datetime
 class DataGeneratorConfig:
     def __init__(self, dataset):
         # Path to output dataset
-        self.data_path: str = os.path.join('../../data/final_datasets', 'raw_' + dataset + '_data.csv')
+        self.data_path: str = os.path.join('../../data/final_datasets', 'raw_reduced_' + dataset + '_data.csv')
     
 class DataGenerator:
-    def __init__(self, sentinel_data, landsat_data, building_data, weather_data, base_data, type_of_dataset):
+    def __init__(self, sentinel_data, landsat_data, building_data, weather_data, base_data, 
+                 type_of_dataset, drop_columns = []):
         # Type of the dataset, either training or test
         self.type_of_dataset = type_of_dataset
         
@@ -46,6 +47,9 @@ class DataGenerator:
         
         # Path to training or test data
         self.base_data = base_data
+        
+        # Columns to drop before saving the concatened dataset
+        self.drop_columns = drop_columns
         
     def initiate_data_generation(self):
         # Load all the .csv datasets and concatenate them
@@ -188,12 +192,20 @@ class DataGenerator:
                                 df_weather_new,
                                 df_base[df_base.columns[-1]]), axis = 1)
                 
+                # Check if there are some columns to drop
+                if not (len(self.drop_columns) == 0):
+                    df_conc.drop(columns = self.drop_columns, inplace = True)
+                
             else:
                 # Concatenate all the datasets without the targets in the case of the test dataset
                 df_conc = concat((df_sentinel.drop(columns = ['Longitude', 'Latitude']),
                                 df_landsat.drop(columns = ['Longitude', 'Latitude']),
                                 df_building.drop(columns = ['Longitude', 'Latitude']),
                                 df_weather_new), axis = 1)
+                
+                # Check if there are some columns to drop
+                if not (len(self.drop_columns) == 0):
+                    df_conc.drop(columns = self.drop_columns, inplace = True)
             
             # Save the DataFrame object as csv
             df_conc.to_csv(self.generator_config.data_path, index=False)
@@ -208,13 +220,57 @@ class DataGenerator:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    dataset_type = 'training'
+    #dataset_type = 'training'
+    dataset_type = 'test'
     sentinel = '../../data/' + dataset_type + '_sentinel_data.csv'
     landsat = '../../data/' + dataset_type + '_landsat_data.csv'
     building = '../../data/' + dataset_type + '_building_footprint_data.csv'
     weather = '../../data/weather_data.csv'
-    base = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
-    #base = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
+    #base = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
+    base = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
+    columns_to_drop = ['ndvi_median_res10',
+                       'bwdrvi_median_res10',
+                       'ctvi_median_res10',
+                       'ccci_median_res10',
+                       'fe2_median_res10',
+                       'fo_median_res10',
+                       'msr_median_res10',
+                       'msavi_median_res10',
+                       'psndc2_median_res10',
+                       'bndvi_median_res10',
+                       'nbr_median_res10',
+                       'pndvi_median_res10',
+                       'pvr_median_res10',
+                       'rbndvi_median_res10',
+                       'srswirnir_median_res10',
+                       'sbl_median_res10',
+                       'sipi1_median_res10',
+                       'vari_median_res10',
+                       'tdvi_median_res10',
+                       'ndbi_median_res10',
+                       'ndwi_median_res10',
+                       'relative_humidity [percent]',
+                       'avg_wind_speed [m/s]',
+                       'wind_direction [degrees]',
+                       'solar_flux [W/m^2]',
+                       'sun_altitude [deg]',
+                       'sun_azimuth [deg]']
     
-    obj = DataGenerator(sentinel, landsat, building, weather, base, dataset_type)
+    obj = DataGenerator(sentinel, landsat, building, weather, base, dataset_type, drop_columns = columns_to_drop)
     data = obj.initiate_data_generation()
+    
+    """ Variables conserved in the reduced dataset:
+    
+        gndvi_median_res10
+        datt1_median_res10
+        fs_median_res10
+        siwsi_median_res10
+        ndmi_median_res10
+        si_median_res10
+        w_median_res10
+        evi_median_res10
+        lst_median_res10
+        polygon_area
+        polygon_perimeter
+        polygon_density
+        air_temperature_at_surface [degC] """

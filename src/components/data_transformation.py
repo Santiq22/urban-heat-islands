@@ -18,10 +18,10 @@ from sklearn.preprocessing import StandardScaler
 @dataclass
 class DataTransformationConfig:
     # Training transformed dataset filepath
-    training_dataset_file_path = os.path.join('../../data/final_datasets', 'transformed_training_data.csv')
+    training_dataset_file_path = os.path.join('../../data/final_datasets', 'transformed_reduced_training_data.csv')
     
     # Test transformed dataset filepath
-    test_dataset_file_path = os.path.join('../../data/final_datasets', 'transformed_test_data.csv')
+    test_dataset_file_path = os.path.join('../../data/final_datasets', 'transformed_reduced_test_data.csv')
     
 # Class to set the inputs
 class DataTransformation:
@@ -105,8 +105,8 @@ class DataTransformation:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    training = '../../data/final_datasets/raw_training_data.csv'
-    test = '../../data/final_datasets/raw_test_data.csv'
+    training = '../../data/final_datasets/raw_reduced_training_data.csv'
+    test = '../../data/final_datasets/raw_reduced_test_data.csv'
     response_name = 'UHI Index'
     
     obj = DataTransformation(training, test, response_name)

@@ -12,6 +12,21 @@ from shapely.geometry import Point, Polygon
 from tqdm import tqdm
 # =============================================================================================== #
 
+# ===================================== External functions ====================================== #
+def assign_hag(polygon_centroid, list_of_hag_points, array_of_hag_values):
+    """ Assigns a HAG value to the given polygon """
+    
+    # Compute the distance between the polygon centroid and the list of points
+    d = array([p.centroid.distance(polygon_centroid) for p in list_of_hag_points])
+
+    # Check which distance is the smallest
+    idx_min = argmin(d)
+    
+    # HAG index corresponding to the closest polygon
+    hag = array_of_hag_values[idx_min]
+    return hag
+# =============================================================================================== #
+
 # ======================================== Main classes ========================================= #
 @dataclass
 class DataIngestionConfig:
@@ -20,12 +35,15 @@ class DataIngestionConfig:
         self.data_path: str = os.path.join('../../data', dataset+'_building_footprint_data.csv')
     
 class DataIngestion:
-    def __init__(self, input_points, kml_path, radius, threshold, type_of_dataset):
+    def __init__(self, input_points, hag_path, kml_path, radius, threshold, type_of_dataset):
         # This variable will consist in the input I need to initialize
         self.ingestion_config = DataIngestionConfig(type_of_dataset)
         
         # (N, 2) array of (Lon, Lat) points to associate to the given polygons
         self.input_points = input_points*pi/180.0                                         # Radians
+        
+        # Path to the dataset storing the HAG indeces
+        self.hag_path = hag_path
         
         # Path to kml data
         self.kml_path = kml_path
@@ -104,8 +122,14 @@ class DataIngestion:
             
             logging.info("Shapely Point objects correctly created")
             
-            # Areas, perimeters, and densities list
-            area_perimeter_density = []
+            # Load the HAG dataset
+            df_hag = read_csv(self.hag_path)
+            
+            # Create a list of Shapely Point objects corresponding to the locations of the HAG dataset
+            hag_points = [Point(coord) for coord in df_hag['Longitude', 'Latitude'].values]
+            
+            # Areas, perimeters, densities, and HAG list
+            area_perimeter_density_hag = []
             
             # Earth radius
             earth_radius = 6378000.0                        # Meters
@@ -128,23 +152,36 @@ class DataIngestion:
                 the curvature of the working surface. The same argument can be applied to the 
                 area. It is important in this case to represent the angles in radians. """
                 if earth_radius*d[idx_min] <= self.threshold:
+                    # Area and perimeter
                     polygon_area, polygon_perimeter = polygons[idx_min].area, polygons[idx_min].length
+                    
+                    # HAG
+                    polygon_hag = assign_hag(polygons[idx_min].centroid, hag_points, df_hag['HAG'].values)
                 else:
+                    # Area and perimeter
                     polygon_area, polygon_perimeter = 0.0, 0.0
+                    
+                    # HAG
+                    polygon_hag = 0.0     # ======================================================================================
                 
                 # Append the area, perimeter, and density values
-                area_perimeter_density.append([polygon_area, polygon_perimeter, polygon_density])
+                area_perimeter_density_hag.append([polygon_area, polygon_perimeter, polygon_density, polygon_hag])
                 
             # Convert the list of areas, perimeters, and densities into a numpy array
-            area_perimeter_density = array(area_perimeter_density)
+            area_perimeter_density_hag = array(area_perimeter_density_hag)
             
-            logging.info("Areas, perimeters, and densities correctly associated to each point")
+            logging.info("Areas, perimeters, densities, and HAG indeces correctly associated to each point")
             
-            # Concatenate arrays of points, areas, perimeters, and densities
-            dataset = concatenate((self.input_points, area_perimeter_density), axis = 1)
+            # Concatenate arrays of points, areas, perimeters, densities, and HAG indeces
+            dataset = concatenate((self.input_points, area_perimeter_density_hag), axis = 1)
             
             # Convert data to pandas DataFrame object
-            dataset = DataFrame(dataset, columns = ['Longitude', 'Latitude', 'polygon_area', 'polygon_perimeter', 'polygon_density'])
+            dataset = DataFrame(dataset, columns = ['Longitude', 
+                                                    'Latitude', 
+                                                    'polygon_area', 
+                                                    'polygon_perimeter', 
+                                                    'polygon_density', 
+                                                    'polygon_hag'])
             
             logging.info("Data concatenated and transformed to pandas DataFrame")
             
@@ -157,16 +194,18 @@ class DataIngestion:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    df = read_csv('../../data/Training_data_uhi_index_UHI2025-v2.csv')
-    #df = read_csv('../../data/Test_data_uhi_index_UHI2025-v2.csv')
+    #df = read_csv('../../data/Training_data_uhi_index_UHI2025-v2.csv')
+    df = read_csv('../../data/Test_data_uhi_index_UHI2025-v2.csv')
     
     lon_lat = df[['Longitude', 'Latitude']].to_numpy()
+    path_to_hag_data = '../../data/hag_data.csv'
     kml_file_path = '../../data/Building_Footprint.kml'
     density_radius = 250.0                                # Meters
     threshold_radius = 100.0                              # Meters
-    dataset_type = 'training'
+    #dataset_type = 'training'
+    dataset_type = 'test'
     
     # Instantiate DataIngestion object
-    obj = DataIngestion(lon_lat, kml_file_path, density_radius, threshold_radius, dataset_type)
+    obj = DataIngestion(lon_lat, path_to_hag_data, kml_file_path, density_radius, threshold_radius, dataset_type)
     
     data = obj.initiate_data_ingestion()
