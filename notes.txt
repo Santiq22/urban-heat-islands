@@ -34,3 +34,5 @@ It is better to put a cut-off of, e.g., 100 m. If there is no building closer th
 then assigns 0 to the value of the area and perimeter.
 
 Processing COPC Data with PDAL, STAC, and Planetary Computer: https://github.com/microsoft/PlanetaryComputerExamples/blob/main/datasets/3dep-lidar/3dep-lidar-copc-example.ipynb
+
+Reunión 17/02: Probar modelo estadístico para categorizar
