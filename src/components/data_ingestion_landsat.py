@@ -33,7 +33,7 @@ from odc.stac import stac_load
 @dataclass
 class DataIngestionConfig:
     # Path to output datasets
-    raw_data_path: str = os.path.join('../../data', 'raw_data.tiff')
+    raw_data_path: str = os.path.join('../../data', 'raw_landsat_data.tiff')
     
 class DataIngestion:
     def __init__(self, lower_left, upper_right, time_window, collection, cloud_cover_rate,
@@ -59,7 +59,7 @@ class DataIngestion:
         # Pixel resolution for the final product
         self.resolution = resolution                                             # Meters per pixel
         
-        # 
+        # Bands to do the searching
         self.bands = bands
         
     def initiate_data_ingestion(self):
@@ -83,7 +83,7 @@ class DataIngestion:
                 bbox = bounds, 
                 datetime = self.time_window,
                 collections = [self.collection],
-                query = {"eo:cloud_cover": {"lt": self.cloud_cover_rate}})
+                query = {"eo:cloud_cover": {"lt": self.cloud_cover_rate},"platform": {"in": ["landsat-8"]}})
             
             logging.info("Items satisfying criteria searched")
             
@@ -99,6 +99,7 @@ class DataIngestion:
             scale = self.resolution/111320.0                     # Degrees per pixel for CRS = 4326
             
             # Load several STAC Item objects as an xarray.Dataset
+            # We will use only the Surface Temperature data
             data = stac_load(
                 items,
                 bands = self.bands,
@@ -109,26 +110,22 @@ class DataIngestion:
                 patch_url = planetary_computer.sign,
                 bbox = bounds)
             
+            # Scale factors for the Surface Temperature band
+            scale_lst = 0.00341802
+            offset = 149.0 
+            kelvin_celsius = 273.15                                # Convert from Kelvin to Celsius
+            data = data.astype(float)*scale_lst + offset - kelvin_celsius
+            
             # Compute the median over the time dimension for the different bands
-            median = data.median(dim="time").compute()
+            median = data.median(dim = "time").compute()
             
             logging.info("Median over the time dimension computed for every band in the dataset")
             
-            # ------------------------- Computation of different filters --------------------------
-            # Calculate NDVI for the median mosaic
-            ndvi_median = (median.B08 - median.B04)/(median.B08 + median.B04)
+            # -------------------------- Computation of different bands ---------------------------
+            # Get the Surface Temperature band for the median mosaic
+            lst_median = median.lwir11
             
-            logging.info("NDVI index computed")
-            
-            # Calculate NDBI for the median mosaic
-            ndbi_median = (median.B11 - median.B08)/(median.B11 + median.B08)
-            
-            logging.info("NDBI index computed")
-            
-            # Calculate NDWI for the median mosaic
-            ndwi_median = (median.B03 - median.B08)/(median.B03 + median.B08)
-            
-            logging.info("NDWI index computed")
+            logging.info("LST band loaded")
             # -------------------------------------------------------------------------------------            
             
             # Calculate the dimensions of the output file
@@ -143,40 +140,20 @@ class DataIngestion:
             
             # Write the CRS to the dataset in a CF compliant manner. It returns a modified dataset 
             # with CF compliant CRS information.
-            median.rio.write_crs("epsg:4326", inplace = True)
-            ndvi_median.rio.write_crs("epsg:4326", inplace = True)
-            ndbi_median.rio.write_crs("epsg:4326", inplace = True)
-            ndwi_median.rio.write_crs("epsg:4326", inplace = True)
+            lst_median.rio.write_crs("epsg:4326", inplace = True)
             
             # Write the GeoTransform to the dataset where GDAL can read it in. It returns a modified 
             # dataset with GeoTransform written.
-            median.rio.write_transform(transform = gt, inplace = True)
-            ndvi_median.rio.write_transform(transform = gt, inplace = True)
-            ndbi_median.rio.write_transform(transform = gt, inplace = True)
-            ndwi_median.rio.write_transform(transform = gt, inplace = True)
+            lst_median.rio.write_transform(transform = gt, inplace = True)
             
-            logging.info("Transformation to the EPSG:4326 CRS finished")
+            logging.info("Transformation to the EPSG:4326 CRS finished")            
             
             # Create the GeoTIFF output file using the defined parameters 
             with rasterio.open(self.ingestion_config.raw_data_path, 'w', driver = 'GTiff', width = width, 
-                               height = height, crs = 'epsg:4326', transform = gt, count = 15, 
+                               height = height, crs = 'epsg:4326', transform = gt, count = 1, 
                                compress = 'lzw', dtype = 'float64') as dst:
                 # Save the raw data in its path
-                dst.write(median.B01, 1)
-                dst.write(median.B02, 2)
-                dst.write(median.B03, 3)
-                dst.write(median.B04, 4)
-                dst.write(median.B05, 5)
-                dst.write(median.B06, 6)
-                dst.write(median.B07, 7) 
-                dst.write(median.B08, 8)
-                dst.write(median.B8A, 9)
-                dst.write(median.B09, 10)
-                dst.write(median.B11, 11)
-                dst.write(median.B12, 12)
-                dst.write(ndvi_median, 13)
-                dst.write(ndbi_median, 14)
-                dst.write(ndwi_median, 15)                
+                dst.write(lst_median, 1)
                 dst.close()
             
             logging.info("Raw data saved as .tiff files")
@@ -192,10 +169,10 @@ if __name__ == "__main__":
     l_l = (40.75, -74.01)
     u_r = (40.88, -73.86)
     t_w = "2021-06-01/2021-09-01"
-    coll = "sentinel-2-l2a"
-    clouds = 30.0
-    res = 10.0
-    bands = ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B8A", "B09", "B11", "B12"]
+    coll = "landsat-c2-l2"
+    clouds = 50.0                                                                      # Percentage
+    res = 30.0                                                                   # Meters per pixel
+    bands = ["lwir11"]
     
     obj = DataIngestion(l_l, u_r, t_w, coll, clouds, res, bands)
     raw_data = obj.initiate_data_ingestion()
