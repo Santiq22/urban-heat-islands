@@ -32,7 +32,7 @@ def assign_hag(polygon_centroid, list_of_hag_points, array_of_hag_values):
 class DataIngestionConfig:
     def __init__(self, dataset):
         # Path to output datasets
-        self.data_path: str = os.path.join('../../data', dataset+'_building_footprint_data.csv')
+        self.data_path: str = os.path.join('../../data/initial_datasets/', dataset+'_building_footprint_data.csv')
     
 class DataIngestion:
     def __init__(self, input_points, hag_path, kml_path, radius, threshold, type_of_dataset):
@@ -126,7 +126,7 @@ class DataIngestion:
             df_hag = read_csv(self.hag_path)
             
             # Create a list of Shapely Point objects corresponding to the locations of the HAG dataset
-            hag_points = [Point(coord) for coord in df_hag['Longitude', 'Latitude'].values]
+            hag_points = [Point(coord) for coord in df_hag[['Longitude', 'Latitude']].values]
             
             # Areas, perimeters, densities, and HAG list
             area_perimeter_density_hag = []
@@ -162,7 +162,7 @@ class DataIngestion:
                     polygon_area, polygon_perimeter = 0.0, 0.0
                     
                     # HAG
-                    polygon_hag = 0.0     # ======================================================================================
+                    polygon_hag = 0.0
                 
                 # Append the area, perimeter, and density values
                 area_perimeter_density_hag.append([polygon_area, polygon_perimeter, polygon_density, polygon_hag])
@@ -194,16 +194,16 @@ class DataIngestion:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    #df = read_csv('../../data/Training_data_uhi_index_UHI2025-v2.csv')
-    df = read_csv('../../data/Test_data_uhi_index_UHI2025-v2.csv')
+    df = read_csv('../../data/initial_datasets/Training_data_uhi_index_UHI2025-v2.csv')
+    #df = read_csv('../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv')
     
     lon_lat = df[['Longitude', 'Latitude']].to_numpy()
-    path_to_hag_data = '../../data/hag_data.csv'
-    kml_file_path = '../../data/Building_Footprint.kml'
+    path_to_hag_data = '../../data/initial_datasets/hag_data.csv'
+    kml_file_path = '../../data/initial_datasets/Building_Footprint.kml'
     density_radius = 250.0                                # Meters
     threshold_radius = 100.0                              # Meters
-    #dataset_type = 'training'
-    dataset_type = 'test'
+    dataset_type = 'training'
+    #dataset_type = 'test'
     
     # Instantiate DataIngestion object
     obj = DataIngestion(lon_lat, path_to_hag_data, kml_file_path, density_radius, threshold_radius, dataset_type)

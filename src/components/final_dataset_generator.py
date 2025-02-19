@@ -22,7 +22,7 @@ from datetime import datetime
 class DataGeneratorConfig:
     def __init__(self, dataset):
         # Path to output dataset
-        self.data_path: str = os.path.join('../../data/final_datasets', 'raw_reduced_' + dataset + '_data.csv')
+        self.data_path: str = os.path.join('../../data/final_datasets/raw_datasets/', 'raw_reduced_' + dataset + '_data.csv')
     
 class DataGenerator:
     def __init__(self, sentinel_data, landsat_data, building_data, weather_data, base_data, 
@@ -220,14 +220,14 @@ class DataGenerator:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    #dataset_type = 'training'
-    dataset_type = 'test'
-    sentinel = '../../data/' + dataset_type + '_sentinel_data.csv'
-    landsat = '../../data/' + dataset_type + '_landsat_data.csv'
-    building = '../../data/' + dataset_type + '_building_footprint_data.csv'
-    weather = '../../data/weather_data.csv'
-    #base = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
-    base = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
+    dataset_type = 'training'
+    #dataset_type = 'test'
+    sentinel = '../../data/initial_datasets/' + dataset_type + '_sentinel_data.csv'
+    landsat = '../../data/initial_datasets/' + dataset_type + '_landsat_data.csv'
+    building = '../../data/initial_datasets/' + dataset_type + '_building_footprint_data.csv'
+    weather = '../../data/initial_datasets/weather_data.csv'
+    base = '../../data/initial_datasets/Training_data_uhi_index_UHI2025-v2.csv'
+    #base = '../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv'
     columns_to_drop = ['ndvi_median_res10',
                        'bwdrvi_median_res10',
                        'ctvi_median_res10',
@@ -255,6 +255,7 @@ if __name__ == "__main__":
                        'solar_flux [W/m^2]',
                        'sun_altitude [deg]',
                        'sun_azimuth [deg]']
+    #columns_to_drop = []
     
     obj = DataGenerator(sentinel, landsat, building, weather, base, dataset_type, drop_columns = columns_to_drop)
     data = obj.initiate_data_generation()
