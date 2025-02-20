@@ -194,7 +194,7 @@ class DataIngestion:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    df = read_csv('../../data/initial_datasets/Training_data_uhi_index_UHI2025-v2.csv')
+    df = read_csv('../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv')
     #df = read_csv('../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv')
     
     lon_lat = df[['Longitude', 'Latitude']].to_numpy()
