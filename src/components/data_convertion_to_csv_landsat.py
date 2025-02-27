@@ -110,10 +110,10 @@ class DataConvertion:
 
 if __name__ == "__main__":
     path_to_tiff = '../../data/initial_datasets/raw_landsat_data.tiff'
-    path_to_csv = '../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv'
-    #path_to_csv = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
-    #dataset_type = 'test'
-    dataset_type = 'training'
+    #path_to_csv = '../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv'
+    path_to_csv = '../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv'
+    dataset_type = 'test'
+    #dataset_type = 'training'
     
     obj = DataConvertion(path_to_tiff, path_to_csv, dataset_type)
     csv_data = obj.initiate_data_convertion()

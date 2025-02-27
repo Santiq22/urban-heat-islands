@@ -22,7 +22,7 @@ from datetime import datetime
 class DataGeneratorConfig:
     def __init__(self, dataset):
         # Path to output dataset
-        self.data_path: str = os.path.join('../../data/final_datasets/raw_datasets/', 'raw_' + dataset + '_data.csv')
+        self.data_path: str = os.path.join('../../data/final_datasets/raw_datasets/', 'raw_reduced_' + dataset + '_data.csv')
     
 class DataGenerator:
     def __init__(self, sentinel_data, landsat_data, building_data, weather_data, base_data, 
@@ -220,15 +220,15 @@ class DataGenerator:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    dataset_type = 'training'
-    #dataset_type = 'test'
+    #dataset_type = 'training'
+    dataset_type = 'test'
     sentinel = '../../data/initial_datasets/' + dataset_type + '_sentinel_data.csv'
     landsat = '../../data/initial_datasets/' + dataset_type + '_landsat_data.csv'
     building = '../../data/initial_datasets/' + dataset_type + '_building_footprint_data.csv'
     weather = '../../data/initial_datasets/weather_data.csv'
-    base = '../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv'
-    #base = '../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv'
-    """columns_to_drop = ['ndvi_median_res10',
+    #base = '../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv'
+    base = '../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv'
+    columns_to_drop = ['ndvi_median_res10',
                        'bwdrvi_median_res10',
                        'ctvi_median_res10',
                        'ccci_median_res10',
@@ -249,13 +249,23 @@ if __name__ == "__main__":
                        'tdvi_median_res10',
                        'ndbi_median_res10',
                        'ndwi_median_res10',
+                       'B6_median_res10',
+                       'datt1_median_res100',
+                       'B7_median_res100',
+                       'B8_median_res100',
+                       'B8A_median_res100',
+                       'datt1_median_res250',
+                       'datt1_median_res500',
+                       'si_median_res500',
+                       'polygon_perimeter',
+                       'polygon_area',
                        'relative_humidity [percent]',
                        'avg_wind_speed [m/s]',
                        'wind_direction [degrees]',
                        'solar_flux [W/m^2]',
                        'sun_altitude [deg]',
-                       'sun_azimuth [deg]']"""
-    columns_to_drop = []
+                       'sun_azimuth [deg]']
+    #columns_to_drop = []
     
     obj = DataGenerator(sentinel, landsat, building, weather, base, dataset_type, drop_columns = columns_to_drop)
     data = obj.initiate_data_generation()
@@ -275,3 +285,30 @@ if __name__ == "__main__":
         polygon_perimeter
         polygon_density
         air_temperature_at_surface [degC] """
+        
+"""'gndvi_median_res100',
+    'datt1_median_res100',
+    'fs_median_res100',
+    'siwsi_median_res100',
+    'ndmi_median_res100',
+    'si_median_res100',
+    'w_median_res100',
+    'evi_median_res100',
+    'gndvi_median_res250',
+    'datt1_median_res250',
+    'fs_median_res250',
+    'siwsi_median_res250',
+    'ndmi_median_res250',
+    'si_median_res250',
+    'w_median_res250',
+    'evi_median_res250',
+    'gndvi_median_res500',
+    'datt1_median_res500',
+    'fs_median_res500',
+    'siwsi_median_res500',
+    'ndmi_median_res500',
+    'si_median_res500',
+    'w_median_res500',
+    'evi_median_res500',
+    'lst_median_res250',
+    'lst_median_res500',"""

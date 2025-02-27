@@ -1,5 +1,6 @@
 # Datasets
 *.tiff
+deprecated_datasets/
 
 # Logs
 *.log

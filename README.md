@@ -8,18 +8,20 @@ Repository containing the material needed in the 2025 EY Open Science AI and Dat
 - bibliography: All the bibliography and references used in the competition.
 - data: Easy and light data. The main/raw data has to be saved locally or downloaded at running time.
 
-    - `Training_data_uhi_index_UHI2025-v2.csv`: Training dataset containing longitudes, latitudes, datetime variables and the UHI indeces to predict.
-    - `Test_data_uhi_index_UHI2025-v2.csv`: Test dataset containing longitudes, latitudes, and datetime variables to generate predictions to upload as submission.
-    - `Building_Footprint.kml`: Building footprints of the Bronx and Manhattan regions.
-    - `building_footprint_data.csv`: Area, perimeter, and density of buildings, and HAG for the training dataset and test dataset locations.
-    - `NY_Mesonet_Weather.csv`: Detailed local weather dataset of the Bronx and Manhattan regions on 24 July 2021 taken from NYS Mesonet.
-    - `bronx_mesonet_weather_data.xlsx`: Detailed local weather dataset of the Bronx region on 24 July 2021 taken from NYS Mesonet.
-    - `manhattan_mesonet_weather_data.xlsx`: Detailed local weather dataset of the Manhattan region on 24 July 2021 taken from NYS Mesonet.
-    - `weather_data.csv`: Detailed local weather dataset of the Bronx and Manhattan regions on 24 July 2021 taken from NYS Mesonet including the azimuth and altitude of the Sun for a mean position and during the same period of time.
-    - `Submission_template_UHI2025-v2.csv`: Validation dataset to predict the UHI index values on the identified locations.
-    - `landast_data.csv`: Landast bands or indeces corresponding to the locations of the training or test data.
-    - `sentinel_data.csv`: Sentinel bands or indeces corresponding to the locations of the training or test data.
-    - `hag_data.csv`: HAG index based on longitudes and latitudes.
+    - initial_datasets:
+        - `Training_data_uhi_index_UHI2025-v2.csv`: Training dataset containing longitudes, latitudes, datetime variables and the UHI indeces to predict.
+        - `Test_data_uhi_index_UHI2025-v2.csv`: Test dataset containing longitudes, latitudes, and datetime variables to generate predictions to upload as submission.
+        - `Building_Footprint.kml`: Building footprints of the Bronx and Manhattan regions.
+        - `building_footprint_data.csv`: Area, perimeter, and density of buildings, and HAG for the training dataset and test dataset locations.
+        - `NY_Mesonet_Weather.csv`: Detailed local weather dataset of the Bronx and Manhattan regions on 24 July 2021 taken from NYS Mesonet.
+        - `bronx_mesonet_weather_data.xlsx`: Detailed local weather dataset of the Bronx region on 24 July 2021 taken from NYS Mesonet.
+        - `manhattan_mesonet_weather_data.xlsx`: Detailed local weather dataset of the Manhattan region on 24 July 2021 taken from NYS Mesonet.
+        - `weather_data.csv`: Detailed local weather dataset of the Bronx and Manhattan regions on 24 July 2021 taken from NYS Mesonet including the azimuth and altitude of the Sun for a mean position and during the same period of time.
+        - `Submission_template_UHI2025-v2.csv`: Validation dataset to predict the UHI index values on the identified locations.
+        - `landast_data.csv`: Landast bands or indeces corresponding to the locations of the training or test data.
+        - `sentinel_data.csv`: Sentinel bands or indeces corresponding to the locations of the training or test data.
+        - `hag_data.csv`: HAG index based on longitudes and latitudes.
+        - `longitude_latitude_grid_data.csv`: Grid of points over the working region spaced by 50 meters.
     - final_dataset:
         - `raw_data.csv`: Joint datasets combining satellite, building footprint, and weather data without longitudes, latitudes, and datetime variables.
         - `transformed_data.csv`: Datasets result of the transformation of the raw data.
