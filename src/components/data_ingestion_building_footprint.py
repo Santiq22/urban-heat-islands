@@ -30,18 +30,18 @@ def assign_hag(polygon_centroid, list_of_hag_points, array_of_hag_values):
 # ======================================== Main classes ========================================= #
 @dataclass
 class DataIngestionConfig:
-    def __init__(self, dataset):
+    def __init__(self, file_name):
         # Path to output datasets
-        self.data_path: str = os.path.join('../../data/initial_datasets/', dataset+'_building_footprint_data.csv')
+        self.file_path: str = os.path.join('../../data/initial_datasets/', file_name)
     
 class DataIngestion:
-    def __init__(self, input_points, hag_path, pluto_path, census_path, kml_path, radius, threshold, type_of_dataset):
+    def __init__(self, input_points, hag_path, pluto_path, census_path, kml_path, radius, threshold, output_name):
         # This variable will consist in the input I need to initialize
-        self.ingestion_config = DataIngestionConfig(type_of_dataset)
+        self.ingestion_config = DataIngestionConfig(output_name)
         
         # (N, 2) array of (Lon, Lat) points to associate to the given polygons
         self.input_points = input_points*pi/180.0                                         # Radians
-        self.input_points_degrees = input_points                                           # Degrees
+        self.input_points_degrees = input_points                                          # Degrees
         
         # Path to the dataset storing the HAG indeces
         self.hag_path = hag_path
@@ -55,7 +55,7 @@ class DataIngestion:
         # Path to kml data
         self.kml_path = kml_path
         
-        # Radius used to compute the building and population density
+        # List of radius used to compute the building and population density
         self.radius = radius
         
         # Radius used as threshold to associate a point to a polygon
@@ -159,7 +159,9 @@ class DataIngestion:
                 idx_min = argmin(d)
                 
                 # Number of buildings inside a circle of radius equal to self.radius
-                polygon_density = sum(where(earth_radius*d <= self.radius, True, False), dtype = float64)                
+                polygon_density = []
+                for r in self.radius:
+                    polygon_density.append(sum(where(earth_radius*d <= r, True, False), dtype = float64))
                 
                 # Get area and perimeter from the corresponding polygon subject to the threshold
                 """ To obtain the perimeter in physical units just multiply by the Earth radius 
@@ -184,30 +186,54 @@ class DataIngestion:
                 # Compute the distance between the point and the points in the pluto dataset
                 d = array([p.distance(point) for p in pluto_points])
                 
-                # Check distances smallers than self.radius
-                idx = where(earth_radius*d <= self.radius, True, False)
+                # Set empty list to store values
+                mean_number_of_floors = []
+                units_density = []
+                std_number_of_floors = []
                 
-                # Mean number of floors inside self.radius
-                mean_number_of_floors = df_pluto['numfloors'].values[idx].mean()
-                
-                # Total number of units inside self.radius
-                units_density = sum(df_pluto['unitstotal'].values[idx], dtype = float64)
+                # Check distances smallers than self.radius list
+                for r in self.radius:
+                    idx = where(earth_radius*d <= r, True, False)
+                    
+                    # Total number of units inside r
+                    units_density.append(sum(df_pluto['unitstotal'].values[idx], dtype = float64))
+                    
+                    # Check if there is no points inside r
+                    if sum(idx) == 0:
+                        # Mean number of floors inside r
+                        mean_number_of_floors.append(0.0)
+                        
+                        # Standard deviation of number of floors inside r
+                        std_number_of_floors.append(0.0)
+                        
+                    else:
+                        # Mean number of floors inside r
+                        mean_number_of_floors.append(df_pluto['numfloors'].values[idx].mean())
+                        
+                        # Standard deviation of number of floors inside r
+                        std_number_of_floors.append(df_pluto['numfloors'].values[idx].std())
                 # ---------------------------------------------------------------------------------
                 
                 # ---------------------------------- Census data ----------------------------------
                 # Compute the distance between the point and the block centroids
                 d = array([p.distance(point) for p in census_points])
-
-                # Check distances smallers than self.radius
-                idx = where(earth_radius*d <= self.radius, True, False)
                 
-                # Population inside a circle of radius equal to self.radius
-                population_density = sum(df_census['Decennial Population Count'].values[idx], dtype = float64)
+                # Set empty list to store values
+                population_density = []
+                
+                # Check distances smallers than self.radius list
+                for r in self.radius:
+                    # Check distances smallers than r
+                    idx = where(earth_radius*d <= r, True, False)
+                    
+                    # Population inside a circle of radius equal to r
+                    population_density.append(sum(df_census['Decennial Population Count'].values[idx], dtype = float64))
                 # ---------------------------------------------------------------------------------
                 
-                # Append the area, perimeter, density values, floors, and units
-                output_data.append([polygon_area, polygon_perimeter, polygon_density, 
-                                    mean_number_of_floors, units_density, population_density])
+                # Append all the computed values
+                output_data.append([polygon_area] + [polygon_perimeter] + polygon_density + 
+                                    mean_number_of_floors + std_number_of_floors + units_density + 
+                                    population_density)
                 
             # Convert the list above into a numpy array
             output_data = array(output_data)
@@ -218,21 +244,19 @@ class DataIngestion:
             dataset = concatenate((self.input_points_degrees, output_data), axis = 1)
             
             # Convert data to pandas DataFrame object
-            dataset = DataFrame(dataset, columns = ['Longitude', 
-                                                    'Latitude', 
-                                                    'polygon_area', 
-                                                    'polygon_perimeter', 
-                                                    'polygon_density_'+str(self.radius),
-                                                    'mean_number_of_floors_'+str(self.radius),
-                                                    'units_density_'+str(self.radius),
-                                                    'population_density_'+str(self.radius)])
+            dataset = DataFrame(dataset, columns = ['Longitude'] + ['Latitude'] + ['polygon_area'] + 
+                                ['polygon_perimeter'] + ['polygon_density_'+str(r) for r in self.radius] +
+                                ['mean_number_of_floors_'+str(r) for r in self.radius] +
+                                ['std_number_of_floors_'+str(r) for r in self.radius] +
+                                ['units_density_'+str(r) for r in self.radius] + 
+                                ['population_density_'+str(r) for r in self.radius])
             
             logging.info("Data concatenated and transformed to pandas DataFrame")
             
             # Save the dataset
-            dataset.to_csv(self.ingestion_config.data_path, index=False)
+            dataset.to_csv(self.ingestion_config.file_path, index=False)
             
-            return self.ingestion_config.data_path
+            return self.ingestion_config.file_path
         except Exception as e:
             raise CustomException(e, sys)
 # =============================================================================================== #
@@ -246,10 +270,11 @@ if __name__ == "__main__":
     path_to_pluto_data = '../../data/initial_datasets/pluto_data.csv'
     path_to_census_data = '../../data/initial_datasets/population_count_data.csv'
     kml_file_path = '../../data/initial_datasets/Building_Footprint.kml'
-    density_radius = 250                                  # Meters
+    density_radius = [250, 500]                           # Meters
     threshold_radius = 100.0                              # Meters
     dataset_type = 'training'
     #dataset_type = 'test'
+    output_name = dataset_type+'_building_footprint_data.csv'
     
     # Instantiate DataIngestion object
     obj = DataIngestion(lon_lat, 
@@ -259,6 +284,6 @@ if __name__ == "__main__":
                         kml_file_path, 
                         density_radius, 
                         threshold_radius, 
-                        dataset_type)
+                        output_name)
     
     data = obj.initiate_data_ingestion()

@@ -14,16 +14,18 @@ from src.logger import logging
 from src.utils import evaluate_models, save_object
 from dataclasses import dataclass
 from pandas import read_csv
+from scipy.stats import loguniform
 
 # Machine learning
 #from catboost import CatBoostRegressor
-from sklearn.ensemble import (AdaBoostRegressor,
-                              GradientBoostingRegressor,
-                              RandomForestRegressor)
+#from sklearn.ensemble import AdaBoostRegressor
+#from sklearn.ensemble import GradientBoostingRegressor
+#from sklearn.ensemble import RandomForestRegressor
 #from sklearn.linear_model import LinearRegression
-#from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neighbors import KNeighborsRegressor
 #from sklearn.tree import DecisionTreeRegressor
-#from xgboost import XGBRegressor, XGBRFRegressor
+#from xgboost import XGBRegressor
+#from xgboost import XGBRFRegressor
 from sklearn.model_selection import train_test_split
 # =============================================================================================== #
 
@@ -37,7 +39,7 @@ class ModelTrainerConfig:
 class ModelTrainer:
     # This class trains the model and saves it in ModelTrainerConfig.trained_model_file_path
     def __init__(self, model_name, training_data_path, test_size, random_state, response_name,
-                 model, parameters):
+                 model, parameters, n_iterations = None):
         # Set the output path to save the trained model
         self.model_trainer_config = ModelTrainerConfig(model_name)
         
@@ -62,6 +64,9 @@ class ModelTrainer:
         # Dictionary of hyperparameter names and values to optimize the model using grid search CV
         self.parameters = parameters
         
+        # Number of iterations the RandomizedSearchCV has to perform
+        self.n_iterations = n_iterations
+        
     def initiate_model_trainer(self):
         try:
             # Load dataset to train the model
@@ -70,8 +75,8 @@ class ModelTrainer:
             logging.info("Dataset loaded")
             
             # Separate in predictors (X) and response (y)
-            X = df.drop(columns = [self.response_name])
-            y = df[self.response_name]
+            X = df.drop(columns = [self.response_name]).values
+            y = df[self.response_name].values
             
             # Generate training and test predictors and responses
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = self.test_size,
@@ -81,7 +86,7 @@ class ModelTrainer:
             
             model_report: dict = evaluate_models(X_train = X_train, y_train = y_train, 
                                                 X_test = X_test, y_test = y_test, model = self.model,
-                                                parameters = self.parameters)
+                                                parameters = self.parameters, n_iterations = self.n_iterations)
             
             logging.info("Grid search CV optimization and model trained finished")
             
@@ -91,10 +96,14 @@ class ModelTrainer:
             # Get best model score from dict
             best_training_model_score = model_report['training_score']
             best_test_model_score = model_report['test_score']
+            
+            # Get the best fit hyperparameters from dict
+            best_fit_hyperparameters = model_report['best_fit_hyperparameters']
 
             if best_training_model_score < 0.6 or best_test_model_score < 0.6:
                 print("Best model training R^2:", best_training_model_score)
                 print("Best model test R^2:", best_test_model_score)
+                print("Best fit hyperparameters:", best_fit_hyperparameters)
                 raise CustomException("No best model found", sys)
             
             logging.info("Best model found on both training and test dataset")
@@ -106,6 +115,7 @@ class ModelTrainer:
             
             print("Best model training R^2:", best_training_model_score)
             print("Best model test R^2:", best_test_model_score)
+            print("Best fit hyperparameters:", best_fit_hyperparameters)
             
             return self.model_trainer_config.trained_model_file_path
         except Exception as e:
@@ -113,31 +123,59 @@ class ModelTrainer:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    model_name = 'best_fit_RFR.pkl'
-    training_data = '../../data/final_datasets/transformed_datasets/transformed_reduced_training_data.csv'
+    model_name = 'best_fit_KNNR.pkl'
+    training_data = '../../data/final_datasets/transformed_datasets/transformed_reduced_98imp_training_data.csv'
     test_size = 0.2
     random_state = 10
     target_name = 'UHI Index'
-    model = RandomForestRegressor(n_jobs = 8, bootstrap = False, random_state = 10)
+    model = KNeighborsRegressor(n_jobs = 8)
+    hyperparameters = dict(n_neighbors = [i for i in range(1, 7100)],
+                           weights = ['uniform', 'distance'],
+                           algorithm = ['auto', 'ball_tree', 'kd_tree', 'brute'],
+                           leaf_size = [i for i in range(2000)])
+    obj = ModelTrainer(model_name, training_data, test_size, random_state, target_name,
+                       model, hyperparameters, n_iterations = 1000) # 10000 takes ~ 7hs-8hs
+    path = obj.initiate_model_trainer()
+  
+    """model = DecisionTreeRegressor(random_state = 10)
+    hyperparameters = dict(criterion = ['squared_error', 'absolute_error', 'friedman_mse', 'poisson'],
+                           splitter = ['best', 'random'],
+                           max_depth = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                           min_samples_split = loguniform(a = 1.0/11229, b = 1.0),
+                           min_samples_leaf = loguniform(a = 1.0/11229, b = 1.0),
+                           max_features = ['sqrt', 'log2', 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                           max_leaf_nodes = [i for i in range(1, 201)],
+                           ccp_alpha = loguniform(a = 1.0e-8, b = 1.0e-4))"""
+                           
+    """model = RandomForestRegressor(n_jobs = 8, bootstrap = False, random_state = 10)
     hyperparameters = dict(n_estimators = [8, 16, 32, 64, 128, 256],
                             criterion = ['squared_error', 'absolute_error', 'friedman_mse', 'poisson'],
                             min_samples_split = [0.05, 0.07, 0.1],
                             min_samples_leaf = [0.01, 0.025, 0.05],
                             max_features = ['sqrt', 'log2', None],
-                            ccp_alpha = [0.0, 1.0e-6, 2.0e-6])
-    
-    obj = ModelTrainer(model_name, training_data, test_size, random_state, target_name,
-                       model, hyperparameters)
-    path = obj.initiate_model_trainer()
+                            ccp_alpha = [0.0, 1.0e-6, 2.0e-6])"""
+                            
+    """model = XGBRegressor(random_state = 10)
+    hyperparameters = dict(eta = loguniform(a = 1.0e-7, b = 1.0),
+                           gamma = loguniform(a = 1.0e-7, b = 1000.0),
+                           max_depth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                           min_child_weight = loguniform(a = 1.0e-7, b = 1000.0),
+                           subsample = loguniform(a = 1.0/11229, b = 1.0),
+                           colsample_bytree = loguniform(a = 1.0/11229, b = 1.0),
+                           colsample_bylevel = loguniform(a = 1.0/11229, b = 1.0),
+                           colsample_bynode = loguniform(a = 1.0/11229, b = 1.0),
+                           reg_lambda = loguniform(a = 1.0e-7, b = 1000.0),
+                           reg_alpha = loguniform(a = 1.0e-7, b = 1000.0),
+                           tree_method = ['auto', 'exact', 'approx', 'hist'])"""
 
 """{"Random Forest": RandomForestRegressor(),
-                      "Decision Tree": DecisionTreeRegressor(),
-                      "Gradient Boosting": GradientBoostingRegressor(),
-                      "Linear Regression": LinearRegression(),
-                      "K-Neighbors Regressor": KNeighborsRegressor(),
-                      "XGBRegressor": XGBRegressor(),
-                      "CatBoost Regressor": CatBoostRegressor(verbose = False),
-                      "AdaBoost Regressor": AdaBoostRegressor()}
+    "Decision Tree": DecisionTreeRegressor(),
+    "Gradient Boosting": GradientBoostingRegressor(),
+    "Linear Regression": LinearRegression(),
+    "K-Neighbors Regressor": KNeighborsRegressor(),
+    "XGBRegressor": XGBRegressor(),
+    "CatBoost Regressor": CatBoostRegressor(verbose = False),
+    "AdaBoost Regressor": AdaBoostRegressor()}
                       
                       
 {"Decision Tree": {

@@ -40,3 +40,50 @@ Reunión 17/02: Probar modelo estadístico para categorizar
 There is a width of 14.47 km in latitudes and 16.7 km in longitudes of the area of interest
 
 US Census Blocks: https://hub.arcgis.com/datasets/fedmaps::u-s-census-blocks-1/explore?location=40.793367%2C-73.967479%2C18.00
+
+Training target distribution:                  NormaltestResult(statistic=77.12368852816364, pvalue=1.789797199055276e-17)
+Test target distribution (predicted):          NormaltestResult(statistic=8.480918986713155, pvalue=0.014400973171110526)
+
+Experiment checking the performance of a RFR trained after dropping columns based on the least important features:
+
+Number of columns to drop 11. R^2 generated after dropping variables: Training 0.9751162868136235 | Test 0.9383108456395249.
+Number of columns to drop 18. R^2 generated after dropping variables: Training 0.9751796153598137 | Test 0.9395546103386122.
+Number of columns to drop 22. R^2 generated after dropping variables: Training 0.9749450283865392 | Test 0.9397911769045172.
+Number of columns to drop 25. R^2 generated after dropping variables: Training 0.9746219363571916 | Test 0.939132056206456.
+Number of columns to drop 28. R^2 generated after dropping variables: Training 0.9747908746886855 | Test 0.940123300971851.
+Number of columns to drop 30. R^2 generated after dropping variables: Training 0.9745933079225362 | Test 0.9393242023715239.
+Number of columns to drop 33. R^2 generated after dropping variables: Training 0.9745010463678373 | Test 0.939360798295215.
+Number of columns to drop 35. R^2 generated after dropping variables: Training 0.9743766613830744 | Test 0.9393686363645187.
+Number of columns to drop 37. R^2 generated after dropping variables: Training 0.9741756727342907 | Test 0.9397701532702083.
+Number of columns to drop 39. R^2 generated after dropping variables: Training 0.9738289866564175 | Test 0.9394348599994966.
+
+28 least important features:
+
+datt1_median_res10
+B2_median_res10
+B4_median_res10
+ndmi_median_res10
+si_median_res10
+w_median_res10
+B3_median_res10
+B5_median_res10
+B7_median_res10
+B8_median_res10
+evi_median_res10
+B8A_median_res10
+siwsi_median_res10
+B4_median_res100
+gndvi_median_res10
+B11_median_res10
+B12_median_res10
+fs_median_res10
+B3_median_res100
+B5_median_res100
+B2_median_res100
+B3_median_res250
+ndmi_median_res100
+B12_median_res100
+B12_median_res250
+B4_median_res250
+B7_median_res250
+B11_median_res100
