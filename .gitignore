@@ -4,3 +4,5 @@ deprecated_datasets/
 
 # Logs
 *.log
+# pkl
+*.pkl
