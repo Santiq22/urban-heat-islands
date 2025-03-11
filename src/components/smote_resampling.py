@@ -13,14 +13,14 @@ from imblearn.over_sampling import SMOTE
 # ======================================== Main classes ========================================= #
 @dataclass
 class DataSMOTEResamplingConfig:
-    def __init__(self):
+    def __init__(self, file_name):
         # Path to output datasets
-        self.data_path: str = os.path.join('../../data/final_datasets/transformed_datasets/', 'transformed_reduced_smote_training_data.csv')
+        self.file_path: str = os.path.join('../../data/final_datasets/transformed_datasets/', file_name)
         
 class DataSMOTEResampling:
-    def __init__(self, path_to_data, bins, rs):
+    def __init__(self, path_to_data, bins, rs, output_name):
         # This variable will consist in the input I need to initialize
-        self.smote_resampling_config = DataSMOTEResamplingConfig()
+        self.smote_resampling_config = DataSMOTEResamplingConfig(output_name)
         
         # Path to the dataset
         self.path_to_data = path_to_data
@@ -85,11 +85,11 @@ class DataSMOTEResampling:
             df_smote['UHI Index binned'] = df_smote['UHI Index binned'].astype(float)
             
             # Save the new dataset
-            df_smote.to_csv(self.smote_resampling_config.data_path, index = False)
+            df_smote.to_csv(self.smote_resampling_config.file_path, index = False)
             
             logging.info("SMOTE dataset correctly saved")
             
-            return self.smote_resampling_config.data_path
+            return self.smote_resampling_config.file_path
         except Exception as e:
             raise CustomException(e, sys)
 # =============================================================================================== #
@@ -98,6 +98,7 @@ if __name__ == "__main__":
     path = '../../data/final_datasets/transformed_datasets/transformed_reduced_training_data.csv'
     bins = 75
     random_state = 10
+    output = 'transformed_reduced_smote_training_data.csv'
     
-    obj = DataSMOTEResampling(path, bins, random_state)
+    obj = DataSMOTEResampling(path, bins, random_state, output)
     path_to_data = obj.initiate_smote_resampling()

@@ -14,7 +14,7 @@ from sklearn.preprocessing import StandardScaler
 # =============================================================================================== #
 
 # ======================================== Main classes ========================================= #
-# This class will provide the paths for the inputs to the data transformation process
+# This class will provide the paths for the outputs to the data transformation process
 @dataclass
 class DataTransformationConfig:
     def __init__(self, training_file_name, test_file_name):

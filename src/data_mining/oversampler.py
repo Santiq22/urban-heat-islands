@@ -22,12 +22,15 @@ class OversamplerConfig:
     
 class Oversampler:
     # This class oversamples the dataset and saves it in OversamplerConfig.file_path
-    def __init__(self, data_path, model, parameters, n_points, sigma_factor, file_name):
+    def __init__(self, data_path, data_path_oversampled, model, parameters, n_points, sigma_factor, file_name):
         # Set the output path to save the oversampled dataset
         self.oversampler_config = OversamplerConfig(file_name)
         
         # Path to the input data
         self.data_path = data_path
+        
+        # Path to the input oversampled data
+        self.data_path_oversampled = data_path_oversampled
         
         # Model to use for oversampling
         self.model = model
@@ -62,7 +65,7 @@ class Oversampler:
             
             logging.info("Covariance matrix and mean computed")
             
-            # Compute the standard deviation of response values
+            # Compute the standard deviation of response values and scale it
             sigma = self.sigma_factor*y.values.std()
             
             # Set the model to train
@@ -104,9 +107,18 @@ class Oversampler:
             X_new = array(X_new)
             y_new = array(y_new)
             
-            # Concatenate the new datapoints with the originals from the input dataset
-            X_conc = concatenate((X.values, X_new), axis = 0)
-            y_conc = concatenate((y.values.reshape(-1, 1), y_new), axis = 0)
+            # Load the oversampled dataset
+            df_over = read_csv(self.data_path_oversampled)
+            
+            logging.info("Oversampled data correctly read")
+            
+            # Split the oversampled data between predictors and responses
+            X_over = df_over.drop(columns = ['UHI Index'])
+            y_over = df_over['UHI Index']
+            
+            # Concatenate the new datapoints with the ones from the oversampled dataset
+            X_conc = concatenate((X_over.values, X_new), axis = 0)
+            y_conc = concatenate((y_over.values.reshape(-1, 1), y_new), axis = 0)
             
             # Concatenate the new arrays
             output_dataset = concatenate((X_conc, y_conc), axis = 1)
@@ -128,14 +140,16 @@ class Oversampler:
 # =============================================================================================== #
 
 if __name__ == '__main__':
-    data_path = '../../data/final_datasets/transformed_datasets/transformed_training_data.csv'
+    data_path = '../../data/final_datasets/transformed_datasets/transformed_reduced_training_data.csv'
+    data_path_oversampled = '../../data/final_datasets/transformed_datasets/transformed_reduced_oversampled15_training_data.csv'
     model = KNeighborsRegressor(n_jobs = -1)
     hyperparameters = {'algorithm': 'auto', 'leaf_size': 30, 'metric': 'manhattan', 'metric_params': None,
-                    'n_jobs': -1, 'n_neighbors': 4, 'p': 2, 'weights': 'distance'}
-    n = 3000
-    sigma_factor = 0.5
-    output_name = 'transformed_halfsigma_oversampled_training_data.csv'
+                    'n_jobs': -1, 'n_neighbors': 3, 'p': 2, 'weights': 'distance'}
+    n = 2000
+    sigma_factor = 2.0
+    output_name = 'transformed_reduced_oversampled2_training_data.csv'
     
-    obj = Oversampler(data_path = data_path, model = model, parameters = hyperparameters, 
-                      n_points = n, sigma_factor = sigma_factor, file_name = output_name)
+    obj = Oversampler(data_path = data_path, data_path_oversampled = data_path_oversampled,
+                      model = model, parameters = hyperparameters, n_points = n, 
+                      sigma_factor = sigma_factor, file_name = output_name)
     path = obj.initiate_oversampling()

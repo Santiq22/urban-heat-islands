@@ -22,9 +22,9 @@ from scipy.stats import loguniform
 #from sklearn.ensemble import GradientBoostingRegressor
 #from sklearn.ensemble import RandomForestRegressor
 #from sklearn.linear_model import LinearRegression
-from sklearn.neighbors import KNeighborsRegressor
+#from sklearn.neighbors import KNeighborsRegressor
 #from sklearn.tree import DecisionTreeRegressor
-#from xgboost import XGBRegressor
+from xgboost import XGBRegressor
 #from xgboost import XGBRFRegressor
 from sklearn.model_selection import train_test_split
 # =============================================================================================== #
@@ -123,18 +123,25 @@ class ModelTrainer:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    model_name = 'best_fit_KNNR.pkl'
-    training_data = '../../data/final_datasets/transformed_datasets/transformed_reduced_98imp_training_data.csv'
+    model_name = 'best_fit_XGBR_oversampled.pkl'
+    training_data = '../../data/final_datasets/transformed_datasets/transformed_reduced_oversampled2_training_data.csv'
     test_size = 0.2
     random_state = 10
     target_name = 'UHI Index'
-    model = KNeighborsRegressor(n_jobs = 8)
-    hyperparameters = dict(n_neighbors = [i for i in range(1, 7100)],
-                           weights = ['uniform', 'distance'],
-                           algorithm = ['auto', 'ball_tree', 'kd_tree', 'brute'],
-                           leaf_size = [i for i in range(2000)])
+    model = XGBRegressor(random_state = 10)
+    hyperparameters = dict(eta = loguniform(a = 1.0e-7, b = 1.0),
+                           gamma = loguniform(a = 1.0e-7, b = 1000.0),
+                           max_depth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                           min_child_weight = loguniform(a = 1.0e-7, b = 1000.0),
+                           subsample = loguniform(a = 1.0/19229, b = 1.0),
+                           colsample_bytree = loguniform(a = 1.0/19229, b = 1.0),
+                           colsample_bylevel = loguniform(a = 1.0/19229, b = 1.0),
+                           colsample_bynode = loguniform(a = 1.0/19229, b = 1.0),
+                           reg_lambda = loguniform(a = 1.0e-7, b = 1000.0),
+                           reg_alpha = loguniform(a = 1.0e-7, b = 1000.0),
+                           tree_method = ['auto', 'exact', 'approx', 'hist'])
     obj = ModelTrainer(model_name, training_data, test_size, random_state, target_name,
-                       model, hyperparameters, n_iterations = 1000) # 10000 takes ~ 7hs-8hs
+                       model, hyperparameters, n_iterations = 40000)
     path = obj.initiate_model_trainer()
   
     """model = DecisionTreeRegressor(random_state = 10)
@@ -167,6 +174,18 @@ if __name__ == "__main__":
                            reg_lambda = loguniform(a = 1.0e-7, b = 1000.0),
                            reg_alpha = loguniform(a = 1.0e-7, b = 1000.0),
                            tree_method = ['auto', 'exact', 'approx', 'hist'])"""
+                           
+    """model = KNeighborsRegressor(n_jobs = 8)
+    hyperparameters = dict(n_neighbors = [i for i in range(1, 7100)],
+                           weights = ['uniform', 'distance'],
+                           algorithm = ['auto', 'ball_tree', 'kd_tree', 'brute'],
+                           leaf_size = [i for i in range(2000)])"""
+                           
+    """model = AdaBoostRegressor(estimator = KNeighborsRegressor(algorithm = 'auto', leaf_size = 30, metric = 'manhattan', metric_params = None, n_jobs = 1, n_neighbors = 3, p = 2, weights = 'distance'),
+                              random_state = 10)
+    hyperparameters = dict(n_estimators = [i for i in range(1, 501)],
+                           learning_rate = loguniform(a = 1.0e-7, b = 1000.0),
+                           loss = ['linear', 'square', 'exponential'])"""
 
 """{"Random Forest": RandomForestRegressor(),
     "Decision Tree": DecisionTreeRegressor(),
