@@ -18,7 +18,7 @@ from sklearn.neighbors import KNeighborsRegressor
 class OversamplerConfig:
     def __init__(self, file_name):
         # Path to the output oversampled dataset
-        self.file_path = os.path.join('../../data/final_datasets/transformed_datasets/', file_name)
+        self.file_path = os.path.join('../../data/final_datasets/transformed_datasets/interactions_datasets/', file_name)
     
 class Oversampler:
     # This class oversamples the dataset and saves it in OversamplerConfig.file_path
@@ -140,14 +140,14 @@ class Oversampler:
 # =============================================================================================== #
 
 if __name__ == '__main__':
-    data_path = '../../data/final_datasets/transformed_datasets/transformed_reduced_training_data.csv'
-    data_path_oversampled = '../../data/final_datasets/transformed_datasets/transformed_reduced_oversampled15_training_data.csv'
+    data_path = '../../data/final_datasets/transformed_datasets/interactions_datasets/interactions_reduced_training_data.csv'
+    data_path_oversampled = '../../data/final_datasets/transformed_datasets/interactions_datasets/interactions_reduced_training_data.csv'
     model = KNeighborsRegressor(n_jobs = -1)
     hyperparameters = {'algorithm': 'auto', 'leaf_size': 30, 'metric': 'manhattan', 'metric_params': None,
-                    'n_jobs': -1, 'n_neighbors': 3, 'p': 2, 'weights': 'distance'}
+                       'n_neighbors': 2, 'p': 2, 'weights': 'distance'}
     n = 2000
-    sigma_factor = 2.0
-    output_name = 'transformed_reduced_oversampled2_training_data.csv'
+    sigma_factor = 0.5
+    output_name = 'interactions_reduced_oversampled_training_data.csv'
     
     obj = Oversampler(data_path = data_path, data_path_oversampled = data_path_oversampled,
                       model = model, parameters = hyperparameters, n_points = n, 

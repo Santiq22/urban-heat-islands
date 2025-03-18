@@ -47,7 +47,7 @@ def evaluate_models(X_train, y_train, X_test, y_test, model, parameters, n_itera
             gs = GridSearchCV(model_obj, parameters, scoring = r2, cv = 5, n_jobs = 8, verbose = 2)
         else:
             gs = RandomizedSearchCV(model_obj, parameters, n_iter = n_iterations, 
-                                    scoring = r2, cv = 5, n_jobs = 8, verbose = 2)
+                                    scoring = r2, cv = 5, n_jobs = 8, verbose = 2, random_state = 10)
             
         # Perform a grid or randomized search cv
         gs.fit(X_train, y_train)

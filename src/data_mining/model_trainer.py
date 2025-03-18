@@ -24,7 +24,8 @@ from scipy.stats import loguniform
 #from sklearn.linear_model import LinearRegression
 #from sklearn.neighbors import KNeighborsRegressor
 #from sklearn.tree import DecisionTreeRegressor
-from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+#from xgboost import XGBRegressor
 #from xgboost import XGBRFRegressor
 from sklearn.model_selection import train_test_split
 # =============================================================================================== #
@@ -123,25 +124,22 @@ class ModelTrainer:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    model_name = 'best_fit_XGBR_oversampled.pkl'
-    training_data = '../../data/final_datasets/transformed_datasets/transformed_reduced_oversampled2_training_data.csv'
+    model_name = 'best_fit_LGBMR_smote.pkl'
+    training_data = '../../data/final_datasets/transformed_datasets/transformed_reduced_smote_training_data.csv'
     test_size = 0.2
     random_state = 10
-    target_name = 'UHI Index'
-    model = XGBRegressor(random_state = 10)
-    hyperparameters = dict(eta = loguniform(a = 1.0e-7, b = 1.0),
-                           gamma = loguniform(a = 1.0e-7, b = 1000.0),
-                           max_depth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-                           min_child_weight = loguniform(a = 1.0e-7, b = 1000.0),
-                           subsample = loguniform(a = 1.0/19229, b = 1.0),
-                           colsample_bytree = loguniform(a = 1.0/19229, b = 1.0),
-                           colsample_bylevel = loguniform(a = 1.0/19229, b = 1.0),
-                           colsample_bynode = loguniform(a = 1.0/19229, b = 1.0),
-                           reg_lambda = loguniform(a = 1.0e-7, b = 1000.0),
+    target_name = 'UHI Index binned'
+    model = LGBMRegressor(random_state = 10)
+    hyperparameters = dict(boosting_type = ['gbdt', 'dart', 'rf'],
+                           num_leaves = [i for i in range(1, 2001, 1)],
+                           max_depth = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                           learning_rate = loguniform(a = 1.0e-6, b = 10.0),
+                           n_estimators = [i for i in range(1, 301, 1)],
+                           colsample_bytree = loguniform(a = 1.0/27000, b = 1.0),
                            reg_alpha = loguniform(a = 1.0e-7, b = 1000.0),
-                           tree_method = ['auto', 'exact', 'approx', 'hist'])
+                           reg_lambda = loguniform(a = 1.0e-7, b = 1000.0))
     obj = ModelTrainer(model_name, training_data, test_size, random_state, target_name,
-                       model, hyperparameters, n_iterations = 40000)
+                       model, hyperparameters, n_iterations = 500)
     path = obj.initiate_model_trainer()
   
     """model = DecisionTreeRegressor(random_state = 10)
@@ -186,47 +184,3 @@ if __name__ == "__main__":
     hyperparameters = dict(n_estimators = [i for i in range(1, 501)],
                            learning_rate = loguniform(a = 1.0e-7, b = 1000.0),
                            loss = ['linear', 'square', 'exponential'])"""
-
-"""{"Random Forest": RandomForestRegressor(),
-    "Decision Tree": DecisionTreeRegressor(),
-    "Gradient Boosting": GradientBoostingRegressor(),
-    "Linear Regression": LinearRegression(),
-    "K-Neighbors Regressor": KNeighborsRegressor(),
-    "XGBRegressor": XGBRegressor(),
-    "CatBoost Regressor": CatBoostRegressor(verbose = False),
-    "AdaBoost Regressor": AdaBoostRegressor()}
-                      
-                      
-{"Decision Tree": {
-                    'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
-                    # 'splitter':['best','random'],
-                    # 'max_features':['sqrt','log2']
-                    },
-                    "Random Forest":{
-                    # 'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
-                    # 'max_features':['sqrt','log2',None],
-                    'n_estimators': [8, 16, 32, 64, 128, 256]
-                    },
-                    "Gradient Boosting":{
-                    # 'loss':['squared_error', 'huber', 'absolute_error', 'quantile'],
-                    'learning_rate':[.1,.01,.05,.001],
-                    'subsample':[0.6,0.7,0.75,0.8,0.85,0.9],
-                    # 'criterion':['squared_error', 'friedman_mse'],
-                    # 'max_features':['auto','sqrt','log2'],
-                    'n_estimators': [8,16,32,64,128,256]
-                    },
-                    "Linear Regression":{},
-                    "XGBRegressor":{
-                    'learning_rate':[.1,.01,.05,.001],
-                    'n_estimators': [8,16,32,64,128,256]
-                    },
-                    "CatBoosting Regressor":{
-                    'depth': [6,8,10],
-                    'learning_rate': [0.01, 0.05, 0.1],
-                    'iterations': [30, 50, 100]
-                    },
-                    "AdaBoost Regressor":{
-                    'learning_rate':[.1,.01,0.5,.001],
-                    # 'loss':['linear','square','exponential'],
-                    'n_estimators': [8,16,32,64,128,256]
-                    }}"""

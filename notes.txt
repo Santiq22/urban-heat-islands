@@ -59,31 +59,128 @@ Number of columns to drop 39. R^2 generated after dropping variables: Training 0
 
 28 least important features:
 
-datt1_median_res10
-B2_median_res10
-B4_median_res10
-ndmi_median_res10
-si_median_res10
-w_median_res10
-B3_median_res10
-B5_median_res10
-B7_median_res10
-B8_median_res10
-evi_median_res10
-B8A_median_res10
-siwsi_median_res10
-B4_median_res100
-gndvi_median_res10
-B11_median_res10
-B12_median_res10
-fs_median_res10
-B3_median_res100
-B5_median_res100
-B2_median_res100
-B3_median_res250
-ndmi_median_res100
-B12_median_res100
-B12_median_res250
-B4_median_res250
-B7_median_res250
-B11_median_res100
+'datt1_median_res10',
+'B2_median_res10',
+'B4_median_res10',
+'ndmi_median_res10',
+'si_median_res10',
+'w_median_res10',
+'B3_median_res10',
+'B5_median_res10',
+'B7_median_res10',
+'B8_median_res10',
+'evi_median_res10',
+'B8A_median_res10',
+'siwsi_median_res10',
+'B4_median_res100',
+'gndvi_median_res10',
+'B11_median_res10',
+'B12_median_res10',
+'fs_median_res10',
+'B3_median_res100',
+'B5_median_res100',
+'B2_median_res100',
+'B3_median_res250',
+'ndmi_median_res100',
+'B12_median_res100',
+'B12_median_res250',
+'B4_median_res250',
+'B7_median_res250',
+'B11_median_res100'
+
+28 least importan features of the interactions reduced dataset:
+
+'51',
+'32',
+'54',
+'38',
+'11',
+'41',
+'33',
+'43',
+'31',
+'2',
+'47',
+'9',
+'48',
+'42',
+'30',
+'52',
+'23',
+'50',
+'evi_median_res100',
+'B6_median_res250',
+'B6_median_res100',
+'siwsi_median_res250',
+'45',
+'B2_median_res500',
+'w_median_res100',
+'B8A_median_res250',
+'B8_median_res250',
+'53'
+
+Dropped variables whose absence maximize the number of dropped variables vs R^2 trend
+
+'B8A_median_res250',
+'B8_median_res250',
+'datt1_median_res10',
+'B11_median_res10',
+'B6_median_res100',
+'B7_median_res10',
+'evi_median_res250',
+'evi_median_res500',
+'B7_median_res250',
+'air_temperature_at_surface [degC]',
+'B8A_median_res10',
+'gndvi_median_res500',
+'B8_median_res10',
+'w_median_res10',
+'si_median_res10',
+'population_density_500',
+'population_density_250',
+'si_median_res250',
+'B8A_median_res500',
+'B5_median_res10',
+'B3_median_res10',
+'B8_median_res500',
+'B4_median_res10',
+'B2_median_res10',
+'evi_median_res100',
+'B7_median_res500',
+'B12_median_res10',
+'units_density_250',
+'ndmi_median_res10',
+'si_median_res100',
+'evi_median_res10'
+
+KNNR with complete reduced SMOTE training data:
+
+R^2 over Super Cold test data: 0.9844243257145282
+R^2 over Cold test data: 0.8845020816146714
+R^2 over Mean test data: 0.9032697797857377
+R^2 over Hot test data: 0.8247394803480299
+R^2 over Super Hot test data: 0.9697834995772044
+
+VR with KNNRs with complete interactions reduced SMOTE training data:
+
+R^2 over Super Cold test data: 0.9917172626059156
+R^2 over Cold test data: 0.8378484015682324
+R^2 over Mean test data: 0.9007360088389507
+R^2 over Hot test data: 0.8359512689990417
+R^2 over Super Hot test data: 0.9298233623302966
+
+KNNR with complete reduced SMOTE + NO SMOTE training data:
+
+R^2 over Super Cold test data: 0.9890644339092801
+R^2 over Cold test data: 0.8872045858106695
+R^2 over Mean test data: 0.9582034082893273
+R^2 over Hot test data: 0.8562899601735561
+R^2 over Super Hot test data: 0.9679694752268293
+
+VR with KNNRs with complete reduced SMOTE + NO SMOTE training data:
+
+R^2 over Super Cold test data: 0.9886108048604284
+R^2 over Cold test data: 0.8830958839353956
+R^2 over Mean test data: 0.9610872129708696
+R^2 over Hot test data: 0.8678795226341082
+R^2 over Super Hot test data: 0.9697208666290389
