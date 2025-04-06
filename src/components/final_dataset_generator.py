@@ -8,30 +8,30 @@ from dataclasses import dataclass
 
 # Data Science
 from pandas import read_csv, concat, DataFrame
-from numpy import array, arange, argwhere, append, float64, int32
+from numpy import array, arange, argmin, argwhere, append, hstack, pi, float64, int32
 
 # Interpolation
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 # Others
 from datetime import datetime
+from shapely import Point
+from tqdm import tqdm
 # =============================================================================================== #
 
 # ======================================== Main classes ========================================= #
 @dataclass
 class DataGeneratorConfig:
-    def __init__(self, dataset):
+    def __init__(self, file_name):
         # Path to output dataset
-        self.data_path: str = os.path.join('../../data/final_datasets', 'raw_reduced_' + dataset + '_data.csv')
+        self.file_path: str = os.path.join('../../data/final_datasets/raw_datasets/', file_name)
     
 class DataGenerator:
-    def __init__(self, sentinel_data, landsat_data, building_data, weather_data, base_data, 
-                 type_of_dataset, drop_columns = []):
-        # Type of the dataset, either training or test
-        self.type_of_dataset = type_of_dataset
-        
+    def __init__(self, sentinel_data, landsat_data, building_data, weather_data, stations_data, 
+                 base_data, output_name, type_of_dataset, drop_columns = []):
+                
         # This variable will consist in the input I need to initialize
-        self.generator_config = DataGeneratorConfig(self.type_of_dataset)
+        self.generator_config = DataGeneratorConfig(output_name)
         
         # Path to sentinel .csv data
         self.sentinel_data = sentinel_data
@@ -45,8 +45,14 @@ class DataGenerator:
         # Path to weather .csv data
         self.weather_data = weather_data
         
+        # Path to stations .csv data
+        self.stations_data = stations_data
+        
         # Path to training or test data
         self.base_data = base_data
+        
+        # Type of dataset to concatenate
+        self.type_of_dataset = type_of_dataset
         
         # Columns to drop before saving the concatened dataset
         self.drop_columns = drop_columns
@@ -71,6 +77,10 @@ class DataGenerator:
             # Load weather data
             df_weather = read_csv(self.weather_data)
             logging.info("Weather .csv data loaded")
+            
+            # Load stations data
+            df_stations = read_csv(self.stations_data)
+            logging.info("Stations .csv data loaded")
             
             # Load training or test data
             df_base = read_csv(self.base_data)
@@ -143,6 +153,7 @@ class DataGenerator:
             
             # Get training or test latitudes
             latitudes = df_base['Latitude'].values
+            longitudes = df_base['Longitude'].values
             
             # Mean latitude
             mean_lat = (40.76754 + 40.87248)/2.0                    # degrees
@@ -183,6 +194,31 @@ class DataGenerator:
             
             logging.info("Meteorological variables saved on DataFrame object")
             
+            # Define shapely Points objects on the training or test data
+            points_base = [Point(coord) for coord in hstack((longitudes.reshape(-1, 1), 
+                                                             latitudes.reshape(-1, 1)))*pi/180.0]
+            
+            # Define shapely Points objects on the stations data
+            points_stations = [Point(coord) for coord in df_stations[['Longitude', 'Latitude']].values*pi/180.0]
+            
+            # New DataFrame object to store the results in each step
+            df_stations_new = DataFrame(columns = ['temperature', 'pressure_3hr_change', 'temperature_3h_moving_avg', 
+                                                   'temperature_6h_moving_avg', 'temperature_12h_moving_avg'])
+            
+            # Map each point in the training or test data with each station
+            for point in tqdm(points_base, total = len(points_base), desc = "Mapping values"):
+                # Compute the distance between the point and the weather stations
+                d = array([p.centroid.distance(point) for p in points_stations])
+                
+                # Check which distance is the smallest
+                idx_min = argmin(d)
+                
+                # Concatenate with the new DataFrame
+                df_stations_new = concat((df_stations_new, df_stations[['temperature', 'pressure_3hr_change', 
+                                                                        'temperature_3h_moving_avg', 
+                                                                        'temperature_6h_moving_avg', 
+                                                                        'temperature_12h_moving_avg']].iloc[[idx_min]]), axis = 0)
+            
             # Check if the base dataset is the training or test one
             if self.type_of_dataset == 'training':
                 # Concatenate all the datasets and targets in the case of the training dataset
@@ -190,6 +226,7 @@ class DataGenerator:
                                 df_landsat.drop(columns = ['Longitude', 'Latitude']),
                                 df_building.drop(columns = ['Longitude', 'Latitude']),
                                 df_weather_new,
+                                df_stations_new.reset_index(drop = True),
                                 df_base[df_base.columns[-1]]), axis = 1)
                 
                 # Check if there are some columns to drop
@@ -201,33 +238,36 @@ class DataGenerator:
                 df_conc = concat((df_sentinel.drop(columns = ['Longitude', 'Latitude']),
                                 df_landsat.drop(columns = ['Longitude', 'Latitude']),
                                 df_building.drop(columns = ['Longitude', 'Latitude']),
-                                df_weather_new), axis = 1)
+                                df_weather_new,
+                                df_stations_new.reset_index(drop = True)), axis = 1)
                 
                 # Check if there are some columns to drop
                 if not (len(self.drop_columns) == 0):
                     df_conc.drop(columns = self.drop_columns, inplace = True)
             
             # Save the DataFrame object as csv
-            df_conc.to_csv(self.generator_config.data_path, index=False)
+            df_conc.to_csv(self.generator_config.file_path, index=False)
             
             logging.info("Final dataset correctly saved")
             
             logging.info("Data generation process finished")
             
-            return self.generator_config.data_path
+            return self.generator_config.file_path
         except Exception as e:
             raise CustomException(e, sys)
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    #dataset_type = 'training'
-    dataset_type = 'test'
-    sentinel = '../../data/' + dataset_type + '_sentinel_data.csv'
-    landsat = '../../data/' + dataset_type + '_landsat_data.csv'
-    building = '../../data/' + dataset_type + '_building_footprint_data.csv'
-    weather = '../../data/weather_data.csv'
-    #base = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
-    base = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
+    dataset_type = 'training'
+    #dataset_type = 'test'
+    sentinel = '../../data/initial_datasets/' + dataset_type + '_sentinel_data.csv'
+    landsat = '../../data/initial_datasets/' + dataset_type + '_landsat_data.csv'
+    building = '../../data/initial_datasets/' + dataset_type + '_building_footprint_data.csv'
+    weather = '../../data/initial_datasets/weather_data.csv'
+    station = '../../data/initial_datasets/weather_stations.csv'
+    base = '../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv'
+    #base = '../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2_30min.csv'
+    output = 'raw_' + dataset_type + '_data.csv'
     columns_to_drop = ['ndvi_median_res10',
                        'bwdrvi_median_res10',
                        'ctvi_median_res10',
@@ -249,28 +289,23 @@ if __name__ == "__main__":
                        'tdvi_median_res10',
                        'ndbi_median_res10',
                        'ndwi_median_res10',
+                       'B6_median_res10',
+                       'datt1_median_res100',
+                       'B7_median_res100',
+                       'B8_median_res100',
+                       'B8A_median_res100',
+                       'datt1_median_res250',
+                       'datt1_median_res500',
+                       'si_median_res500',
+                       'polygon_perimeter',
+                       'polygon_area',
                        'relative_humidity [percent]',
                        'avg_wind_speed [m/s]',
                        'wind_direction [degrees]',
                        'solar_flux [W/m^2]',
                        'sun_altitude [deg]',
                        'sun_azimuth [deg]']
+    #columns_to_drop = []
     
-    obj = DataGenerator(sentinel, landsat, building, weather, base, dataset_type, drop_columns = columns_to_drop)
+    obj = DataGenerator(sentinel, landsat, building, weather, station, base, output, dataset_type, drop_columns = columns_to_drop)
     data = obj.initiate_data_generation()
-    
-    """ Variables conserved in the reduced dataset:
-    
-        gndvi_median_res10
-        datt1_median_res10
-        fs_median_res10
-        siwsi_median_res10
-        ndmi_median_res10
-        si_median_res10
-        w_median_res10
-        evi_median_res10
-        lst_median_res10
-        polygon_area
-        polygon_perimeter
-        polygon_density
-        air_temperature_at_surface [degC] """

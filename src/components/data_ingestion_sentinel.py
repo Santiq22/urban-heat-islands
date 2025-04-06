@@ -114,7 +114,8 @@ class DataIngestion:
             
             logging.info("Median over the time dimension computed for every band in the dataset")
             
-            # ------------------------- Computation of different filters --------------------------
+            # ------------------------- Computation of different indeces --------------------------
+            """ Replace NaNs by 0.0 never worked. It has to be replaced by the mean value over the grid. """
             # Calculate NDVI for the median mosaic
             ndvi_median = (median.B08 - median.B04)/(median.B08 + median.B04)
             logging.info("NDVI index computed")
@@ -141,7 +142,7 @@ class DataIngestion:
             ccci_median = ccci_median.where(ccci_median.values != -np.inf)
             ccci_median = ccci_median.where(ccci_median.values != np.inf)
             # Replace NaNs by 0.0
-            ccci_median.fillna(0.0)
+            #ccci_median.fillna(0.0)
             logging.info("CCCI index computed")
             
             # Calculate CTVI for the median mosaic
@@ -154,7 +155,7 @@ class DataIngestion:
             datt1_median = datt1_median.where(datt1_median.values != -np.inf)
             datt1_median = datt1_median.where(datt1_median.values != np.inf)
             # Replace NaNs by 0.0
-            datt1_median.fillna(0.0)
+            #datt1_median.fillna(0.0)
             logging.info("Datt1 index computed")
             
             # Calculate Fe2+ for the median mosaic
@@ -175,7 +176,7 @@ class DataIngestion:
             msr_median = msr_median.where(msr_median.values != -np.inf)
             msr_median = msr_median.where(msr_median.values != np.inf)
             # Replace NaNs by 0.0
-            msr_median.fillna(0.0)
+            #msr_median.fillna(0.0)
             logging.info("mSR index computed")
             
             # Calculate MSAVI for the median mosaic
@@ -216,7 +217,7 @@ class DataIngestion:
             si_median = si_median.where(si_median.values != -np.inf)
             si_median = si_median.where(si_median.values != np.inf)
             # Replace NaNs by 0.0
-            si_median.fillna(0.0)
+            #si_median.fillna(0.0)
             logging.info("SI index computed")
             
             # Calculate RBNDVI for the median mosaic
@@ -241,7 +242,7 @@ class DataIngestion:
             sipi1_median = sipi1_median.where(sipi1_median.values != -np.inf)
             sipi1_median = sipi1_median.where(sipi1_median.values != np.inf)
             # Replace NaNs by 0.0
-            sipi1_median.fillna(0.0)
+            #sipi1_median.fillna(0.0)
             logging.info("SIPI1 index computed")
             
             # Calculate VARI for the median mosaic
@@ -258,8 +259,21 @@ class DataIngestion:
             evi_median = evi_median.where(evi_median.values != -np.inf)
             evi_median = evi_median.where(evi_median.values != np.inf)
             # Replace NaNs by 0.0
-            evi_median.fillna(0.0)
+            #evi_median.fillna(0.0)
             logging.info("EVI index computed")
+            # -------------------------------------------------------------------------------------
+            
+            # -------------------------- Computation of different bands ---------------------------
+            B2_median = median.B02
+            B3_median = median.B03
+            B4_median = median.B04
+            B5_median = median.B05
+            B6_median = median.B06
+            B7_median = median.B07
+            B8_median = median.B08
+            B8A_median = median.B8A
+            B11_median = median.B11
+            B12_median = median.B12
             # -------------------------------------------------------------------------------------            
             
             # Calculate the dimensions of the output file
@@ -303,6 +317,16 @@ class DataIngestion:
             vari_median.rio.write_crs("epsg:4326", inplace = True)
             tdvi_median.rio.write_crs("epsg:4326", inplace = True)
             evi_median.rio.write_crs("epsg:4326", inplace = True)
+            B2_median.rio.write_crs("epsg:4326", inplace = True)
+            B3_median.rio.write_crs("epsg:4326", inplace = True)
+            B4_median.rio.write_crs("epsg:4326", inplace = True)
+            B5_median.rio.write_crs("epsg:4326", inplace = True)
+            B6_median.rio.write_crs("epsg:4326", inplace = True)
+            B7_median.rio.write_crs("epsg:4326", inplace = True)
+            B8_median.rio.write_crs("epsg:4326", inplace = True)
+            B8A_median.rio.write_crs("epsg:4326", inplace = True)
+            B11_median.rio.write_crs("epsg:4326", inplace = True)
+            B12_median.rio.write_crs("epsg:4326", inplace = True)
             
             # Write the GeoTransform to the dataset where GDAL can read it in. It returns a modified 
             # dataset with GeoTransform written.
@@ -335,12 +359,22 @@ class DataIngestion:
             vari_median.rio.write_transform(transform = gt, inplace = True)
             tdvi_median.rio.write_transform(transform = gt, inplace = True)
             evi_median.rio.write_transform(transform = gt, inplace = True)
+            B2_median.rio.write_transform(transform = gt, inplace = True)
+            B3_median.rio.write_transform(transform = gt, inplace = True)
+            B4_median.rio.write_transform(transform = gt, inplace = True)
+            B5_median.rio.write_transform(transform = gt, inplace = True)
+            B6_median.rio.write_transform(transform = gt, inplace = True)
+            B7_median.rio.write_transform(transform = gt, inplace = True)
+            B8_median.rio.write_transform(transform = gt, inplace = True)
+            B8A_median.rio.write_transform(transform = gt, inplace = True)
+            B11_median.rio.write_transform(transform = gt, inplace = True)
+            B12_median.rio.write_transform(transform = gt, inplace = True)
             
             logging.info("Transformation to the EPSG:4326 CRS finished")
             
             # Create the GeoTIFF output file using the defined parameters 
             with rasterio.open(self.ingestion_config.raw_data_path, 'w', driver = 'GTiff', width = width, 
-                               height = height, crs = 'epsg:4326', transform = gt, count = 29, 
+                               height = height, crs = 'epsg:4326', transform = gt, count = 39, 
                                compress = 'lzw', dtype = 'float64') as dst:
                 # Save the raw data in its path
                 dst.write(ndvi_median, 1)
@@ -372,6 +406,16 @@ class DataIngestion:
                 dst.write(vari_median, 27)
                 dst.write(tdvi_median, 28)
                 dst.write(evi_median, 29)
+                dst.write(B2_median, 30)
+                dst.write(B3_median, 31)
+                dst.write(B4_median, 32)
+                dst.write(B5_median, 33)
+                dst.write(B6_median, 34)
+                dst.write(B7_median, 35)
+                dst.write(B8_median, 36)
+                dst.write(B8A_median, 37)
+                dst.write(B11_median, 38)
+                dst.write(B12_median, 39)
                 dst.close()
             
             logging.info("Raw data saved as .tiff files")
@@ -394,6 +438,3 @@ if __name__ == "__main__":
     
     obj = DataIngestion(l_l, u_r, t_w, coll, clouds, res, bands)
     raw_data = obj.initiate_data_ingestion()
-    
-    #data_transformation = DataTransformation()
-    #_ = data_transformation.initiate_data_transformation(raw_data)

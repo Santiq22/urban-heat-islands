@@ -11,7 +11,7 @@ from datetime import datetime
 
 # ======================================= Main program ========================================== #
 # Read dataset
-test_df = read_csv('../../data/Submission_template_UHI2025-v2.csv')
+test_df = read_csv('../../data/initial_datasets/Submission_template_UHI2025-v2.csv')
 
 # Get longitudes and latitudes
 longitudes = test_df["Longitude"]
@@ -27,7 +27,8 @@ minutes = rng.integers(low = 0, high = 59, size = lenght, endpoint = True)
 # Create an array of datetime objects
 datetimes = []
 for i in range(lenght):
-    date = datetime(2021, 7, 24, hour = 15, minute = minutes[i])
+    #date = datetime(2021, 7, 24, hour = 15, minute = minutes[i])
+    date = datetime(2021, 7, 24, hour = 15, minute = 30)
     date = date.strftime('%d-%m-%Y %H:%M')
     datetimes.append(date)
     
@@ -39,5 +40,5 @@ new_test_df["datetime"] = datetimes
 new_test_df["UHI Index"] = ones(lenght)
 
 # Save the dataset
-new_test_df.to_csv('../../data/Test_data_uhi_index_UHI2025-v2.csv', index=False)
+new_test_df.to_csv('../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2_30min.csv', index=False)
 # =============================================================================================== #

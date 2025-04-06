@@ -9,7 +9,6 @@ Created on Sun Sep 29 15:36:20 2024
 import sys
 import os
 sys.path.insert(0, os.path.join(os.getcwd(), '../', '../'))
-from src.logger import logging
 # ============================================================================ #
 
 # ========================= Error message function =========================== #

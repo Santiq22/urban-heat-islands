@@ -31,7 +31,7 @@ from tqdm import tqdm
 class DataConvertionConfig:
     def __init__(self, dataset):    
         # Path to output dataset
-        self.csv_data_path: str = os.path.join('../../data', dataset+'_sentinel_data.csv')
+        self.csv_data_path: str = os.path.join('../../data/initial_datasets/', dataset+'_sentinel_data.csv')
     
 class DataConvertion:
     def __init__(self, tiff_path, csv_path, type_of_dataset):
@@ -105,6 +105,16 @@ class DataConvertion:
             vari_median = []
             tdvi_median = []
             evi_median = []
+            B2_median = []
+            B3_median = []
+            B4_median = []
+            B5_median = []
+            B6_median = []
+            B7_median = []
+            B8_median = []
+            B8A_median = []
+            B11_median = []
+            B12_median = []
 
             # Iterate over the latitudes and longitudes, and extract the corresponding indeces values
             for lat, lon in tqdm(zip(latitudes, longitudes), total = len(latitudes), desc = "Mapping values"):
@@ -198,6 +208,36 @@ class DataConvertion:
                 evi = data.sel(x = lon, y = lat, band = 29, method = "nearest").values
                 evi_median.append(evi)
                 
+                B2 = data.sel(x = lon, y = lat, band = 30, method = "nearest").values
+                B2_median.append(B2)
+                
+                B3 = data.sel(x = lon, y = lat, band = 31, method = "nearest").values
+                B3_median.append(B3)
+                
+                B4 = data.sel(x = lon, y = lat, band = 32, method = "nearest").values
+                B4_median.append(B4)
+                
+                B5 = data.sel(x = lon, y = lat, band = 33, method = "nearest").values
+                B5_median.append(B5)
+                
+                B6 = data.sel(x = lon, y = lat, band = 34, method = "nearest").values
+                B6_median.append(B6)
+                
+                B7 = data.sel(x = lon, y = lat, band = 35, method = "nearest").values
+                B7_median.append(B7)
+                
+                B8 = data.sel(x = lon, y = lat, band = 36, method = "nearest").values
+                B8_median.append(B8)
+                
+                B8A = data.sel(x = lon, y = lat, band = 37, method = "nearest").values
+                B8A_median.append(B8A)
+                
+                B11 = data.sel(x = lon, y = lat, band = 38, method = "nearest").values
+                B11_median.append(B11)
+                
+                B12 = data.sel(x = lon, y = lat, band = 39, method = "nearest").values
+                B12_median.append(B12)
+                
             logging.info("Indeces correctly loaded")
             
             # Create a DataFrame to store the band values
@@ -233,6 +273,16 @@ class DataConvertion:
             df_out['vari_median_res10'] = vari_median
             df_out['tdvi_median_res10'] = tdvi_median
             df_out['evi_median_res10'] = evi_median
+            df_out['B2_median_res10'] = B2_median
+            df_out['B3_median_res10'] = B3_median
+            df_out['B4_median_res10'] = B4_median
+            df_out['B5_median_res10'] = B5_median
+            df_out['B6_median_res10'] = B6_median
+            df_out['B7_median_res10'] = B7_median
+            df_out['B8_median_res10'] = B8_median
+            df_out['B8A_median_res10'] = B8A_median
+            df_out['B11_median_res10'] = B11_median
+            df_out['B12_median_res10'] = B12_median
             
             logging.info("Indeces converted to DataFrame columns")
             
@@ -249,10 +299,11 @@ class DataConvertion:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    path_to_tiff = '../../data/raw_sentinel_data.tiff'
-    #path_to_csv = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
-    path_to_csv = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
+    path_to_tiff = '../../data/initial_datasets/raw_sentinel_data.tiff'
+    #path_to_csv = '../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv'
+    path_to_csv = '../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv'
     dataset_type = 'test'
+    #dataset_type = 'training'
     
     obj = DataConvertion(path_to_tiff, path_to_csv, dataset_type)
     csv_data = obj.initiate_data_convertion()

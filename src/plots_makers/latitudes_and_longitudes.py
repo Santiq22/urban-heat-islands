@@ -65,10 +65,10 @@ try:
     median = data.median(dim = "time").compute()
 
     # Load training data
-    training_df = read_csv('../../data/Training_data_uhi_index_UHI2025-v2.csv')
+    training_df = read_csv('../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv')
 
     # Load test data
-    test_df = read_csv('../../data/Test_data_uhi_index_UHI2025-v2.csv')
+    test_df = read_csv('../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv')
     # =============================================================================================== #
 
     # ====================================== Plot the data ========================================== #

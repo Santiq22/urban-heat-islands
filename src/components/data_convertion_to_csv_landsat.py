@@ -31,7 +31,7 @@ from tqdm import tqdm
 class DataConvertionConfig:
     def __init__(self, dataset):    
         # Path to output dataset
-        self.csv_data_path: str = os.path.join('../../data', dataset+'_landsat_data.csv')
+        self.csv_data_path: str = os.path.join('../../data/initial_datasets/', dataset+'_landsat_data.csv')
     
 class DataConvertion:
     def __init__(self, tiff_path, csv_path, type_of_dataset):
@@ -109,10 +109,11 @@ class DataConvertion:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    path_to_tiff = '../../data/raw_landsat_data.tiff'
-    #path_to_csv = '../../data/Training_data_uhi_index_UHI2025-v2.csv'
-    path_to_csv = '../../data/Test_data_uhi_index_UHI2025-v2.csv'
+    path_to_tiff = '../../data/initial_datasets/raw_landsat_data.tiff'
+    #path_to_csv = '../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv'
+    path_to_csv = '../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv'
     dataset_type = 'test'
+    #dataset_type = 'training'
     
     obj = DataConvertion(path_to_tiff, path_to_csv, dataset_type)
     csv_data = obj.initiate_data_convertion()

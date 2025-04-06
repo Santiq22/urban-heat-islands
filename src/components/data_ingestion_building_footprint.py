@@ -30,25 +30,32 @@ def assign_hag(polygon_centroid, list_of_hag_points, array_of_hag_values):
 # ======================================== Main classes ========================================= #
 @dataclass
 class DataIngestionConfig:
-    def __init__(self, dataset):
+    def __init__(self, file_name):
         # Path to output datasets
-        self.data_path: str = os.path.join('../../data', dataset+'_building_footprint_data.csv')
+        self.file_path: str = os.path.join('../../data/initial_datasets/', file_name)
     
 class DataIngestion:
-    def __init__(self, input_points, hag_path, kml_path, radius, threshold, type_of_dataset):
+    def __init__(self, input_points, hag_path, pluto_path, census_path, kml_path, radius, threshold, output_name):
         # This variable will consist in the input I need to initialize
-        self.ingestion_config = DataIngestionConfig(type_of_dataset)
+        self.ingestion_config = DataIngestionConfig(output_name)
         
         # (N, 2) array of (Lon, Lat) points to associate to the given polygons
         self.input_points = input_points*pi/180.0                                         # Radians
+        self.input_points_degrees = input_points                                          # Degrees
         
         # Path to the dataset storing the HAG indeces
         self.hag_path = hag_path
         
+        # Path to the dataset containing pluto data
+        self.pluto_path = pluto_path
+        
+        # Path to the dataset containing census data
+        self.census_path = census_path
+        
         # Path to kml data
         self.kml_path = kml_path
         
-        # Radius used to compute the building density
+        # List of radius used to compute the building and population density
         self.radius = radius
         
         # Radius used as threshold to associate a point to a polygon
@@ -65,9 +72,10 @@ class DataIngestion:
             value given as input variable. If there's no centroid inside that
             radius, a value of 0 will be returned. 
             
-            The idea is to return a (N, 3) array containing the area, 
-            perimeter, and building density, respectively, of the Polygon 
-            associated with (Lon, Lat).
+            The idea is to return a (N, 6) array containing the area, 
+            perimeter, building density, floors on a building, number of
+            units on a building, and the population density respectively, of
+            the input points (Lon, Lat).
             -------------------------------------------------------------
             - points: (N, 2) numpy array representing (Lon, Lat) points. 
             - polygons: lenght M list containing all the Polygons objects 
@@ -117,19 +125,25 @@ class DataIngestion:
                     
             logging.info("Polygon data correctly extracted")
             
-            # Create Shapely Point objects
+            # Create Shapely Point objects over the input (Lon, Lat) points
             points = [Point(coord) for coord in self.input_points]
             
             logging.info("Shapely Point objects correctly created")
             
-            # Load the HAG dataset
-            df_hag = read_csv(self.hag_path)
+            # --------------------------------- Load the datasets ---------------------------------
+            #df_hag = read_csv(self.hag_path)
+            df_pluto = read_csv(self.pluto_path)
+            df_census = read_csv(self.census_path)
+            # -------------------------------------------------------------------------------------
             
-            # Create a list of Shapely Point objects corresponding to the locations of the HAG dataset
-            hag_points = [Point(coord) for coord in df_hag['Longitude', 'Latitude'].values]
+            # ------------ Create lists of Shapely Point objects for the above datasets -----------
+            #hag_points = [Point(coord) for coord in df_hag[['Longitude', 'Latitude']].values]
+            pluto_points = [Point(coord) for coord in df_pluto[['Longitude', 'Latitude']].values*pi/180.0]
+            census_points = [Point(coord) for coord in df_census[['Longitude', 'Latitude']].values*pi/180.0]
+            # -------------------------------------------------------------------------------------
             
-            # Areas, perimeters, densities, and HAG list
-            area_perimeter_density_hag = []
+            # Areas, perimeters, densities, floors, units
+            output_data = []
             
             # Earth radius
             earth_radius = 6378000.0                        # Meters
@@ -137,6 +151,7 @@ class DataIngestion:
             # Check which point is closest to the centroid of a polygon taking into account the 
             # threshold radius
             for point in tqdm(points, total = len(points), desc = "Mapping values"):
+                # ---------------------------- Building footprint data ----------------------------
                 # Compute the distance between the point and the centroids
                 d = array([p.centroid.distance(point) for p in polygons])
 
@@ -144,7 +159,9 @@ class DataIngestion:
                 idx_min = argmin(d)
                 
                 # Number of buildings inside a circle of radius equal to self.radius
-                polygon_density = sum(where(earth_radius*d <= self.radius, True, False), dtype = float64)
+                polygon_density = []
+                for r in self.radius:
+                    polygon_density.append(sum(where(earth_radius*d <= r, True, False), dtype = float64))
                 
                 # Get area and perimeter from the corresponding polygon subject to the threshold
                 """ To obtain the perimeter in physical units just multiply by the Earth radius 
@@ -156,56 +173,117 @@ class DataIngestion:
                     polygon_area, polygon_perimeter = polygons[idx_min].area, polygons[idx_min].length
                     
                     # HAG
-                    polygon_hag = assign_hag(polygons[idx_min].centroid, hag_points, df_hag['HAG'].values)
+                    #polygon_hag = assign_hag(polygons[idx_min].centroid, hag_points, df_hag['HAG'].values)
                 else:
                     # Area and perimeter
                     polygon_area, polygon_perimeter = 0.0, 0.0
                     
                     # HAG
-                    polygon_hag = 0.0     # ======================================================================================
+                    #polygon_hag = 0.0
+                # ---------------------------------------------------------------------------------
                 
-                # Append the area, perimeter, and density values
-                area_perimeter_density_hag.append([polygon_area, polygon_perimeter, polygon_density, polygon_hag])
+                # ----------------------------------- Pluto data ----------------------------------
+                # Compute the distance between the point and the points in the pluto dataset
+                d = array([p.distance(point) for p in pluto_points])
                 
-            # Convert the list of areas, perimeters, and densities into a numpy array
-            area_perimeter_density_hag = array(area_perimeter_density_hag)
+                # Set empty list to store values
+                mean_number_of_floors = []
+                units_density = []
+                std_number_of_floors = []
+                
+                # Check distances smallers than self.radius list
+                for r in self.radius:
+                    idx = where(earth_radius*d <= r, True, False)
+                    
+                    # Total number of units inside r
+                    units_density.append(sum(df_pluto['unitstotal'].values[idx], dtype = float64))
+                    
+                    # Check if there is no points inside r
+                    if sum(idx) == 0:
+                        # Mean number of floors inside r
+                        mean_number_of_floors.append(0.0)
+                        
+                        # Standard deviation of number of floors inside r
+                        std_number_of_floors.append(0.0)
+                        
+                    else:
+                        # Mean number of floors inside r
+                        mean_number_of_floors.append(df_pluto['numfloors'].values[idx].mean())
+                        
+                        # Standard deviation of number of floors inside r
+                        std_number_of_floors.append(df_pluto['numfloors'].values[idx].std())
+                # ---------------------------------------------------------------------------------
+                
+                # ---------------------------------- Census data ----------------------------------
+                # Compute the distance between the point and the block centroids
+                d = array([p.distance(point) for p in census_points])
+                
+                # Set empty list to store values
+                population_density = []
+                
+                # Check distances smallers than self.radius list
+                for r in self.radius:
+                    # Check distances smallers than r
+                    idx = where(earth_radius*d <= r, True, False)
+                    
+                    # Population inside a circle of radius equal to r
+                    population_density.append(sum(df_census['Decennial Population Count'].values[idx], dtype = float64))
+                # ---------------------------------------------------------------------------------
+                
+                # Append all the computed values
+                output_data.append([polygon_area] + [polygon_perimeter] + polygon_density + 
+                                    mean_number_of_floors + std_number_of_floors + units_density + 
+                                    population_density)
+                
+            # Convert the list above into a numpy array
+            output_data = array(output_data)
             
-            logging.info("Areas, perimeters, densities, and HAG indeces correctly associated to each point")
+            logging.info("Areas, perimeters, densities, and floors correctly associated to each point")
             
-            # Concatenate arrays of points, areas, perimeters, densities, and HAG indeces
-            dataset = concatenate((self.input_points, area_perimeter_density_hag), axis = 1)
+            # Concatenate arrays
+            dataset = concatenate((self.input_points_degrees, output_data), axis = 1)
             
             # Convert data to pandas DataFrame object
-            dataset = DataFrame(dataset, columns = ['Longitude', 
-                                                    'Latitude', 
-                                                    'polygon_area', 
-                                                    'polygon_perimeter', 
-                                                    'polygon_density', 
-                                                    'polygon_hag'])
+            dataset = DataFrame(dataset, columns = ['Longitude'] + ['Latitude'] + ['polygon_area'] + 
+                                ['polygon_perimeter'] + ['polygon_density_'+str(r) for r in self.radius] +
+                                ['mean_number_of_floors_'+str(r) for r in self.radius] +
+                                ['std_number_of_floors_'+str(r) for r in self.radius] +
+                                ['units_density_'+str(r) for r in self.radius] + 
+                                ['population_density_'+str(r) for r in self.radius])
             
             logging.info("Data concatenated and transformed to pandas DataFrame")
             
             # Save the dataset
-            dataset.to_csv(self.ingestion_config.data_path, index=False)
+            dataset.to_csv(self.ingestion_config.file_path, index=False)
             
-            return self.ingestion_config.data_path
+            return self.ingestion_config.file_path
         except Exception as e:
             raise CustomException(e, sys)
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    #df = read_csv('../../data/Training_data_uhi_index_UHI2025-v2.csv')
-    df = read_csv('../../data/Test_data_uhi_index_UHI2025-v2.csv')
+    df = read_csv('../../data/initial_datasets/Training_data_uhi_index_2025-02-18.csv')
+    #df = read_csv('../../data/initial_datasets/Test_data_uhi_index_UHI2025-v2.csv')
     
-    lon_lat = df[['Longitude', 'Latitude']].to_numpy()
-    path_to_hag_data = '../../data/hag_data.csv'
-    kml_file_path = '../../data/Building_Footprint.kml'
-    density_radius = 250.0                                # Meters
+    lon_lat = df[['Longitude', 'Latitude']].values
+    path_to_hag_data = '../../data/initial_datasets/hag_data.csv'
+    path_to_pluto_data = '../../data/initial_datasets/pluto_data.csv'
+    path_to_census_data = '../../data/initial_datasets/population_count_data.csv'
+    kml_file_path = '../../data/initial_datasets/Building_Footprint.kml'
+    density_radius = [250, 500]                           # Meters
     threshold_radius = 100.0                              # Meters
-    #dataset_type = 'training'
-    dataset_type = 'test'
+    dataset_type = 'training'
+    #dataset_type = 'test'
+    output_name = dataset_type+'_building_footprint_data.csv'
     
     # Instantiate DataIngestion object
-    obj = DataIngestion(lon_lat, path_to_hag_data, kml_file_path, density_radius, threshold_radius, dataset_type)
+    obj = DataIngestion(lon_lat, 
+                        path_to_hag_data, 
+                        path_to_pluto_data, 
+                        path_to_census_data,
+                        kml_file_path, 
+                        density_radius, 
+                        threshold_radius, 
+                        output_name)
     
     data = obj.initiate_data_ingestion()
