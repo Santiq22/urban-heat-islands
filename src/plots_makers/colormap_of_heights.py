@@ -99,7 +99,7 @@ try:
 
     # Load Pluto data
     df_pluto = read_csv('../../data/initial_datasets/pluto_24v4_1_clean.csv')
-    df_pluto = df_pluto[['longitude', 'latitude', 'unitstotal']]
+    df_pluto = df_pluto[['longitude', 'latitude', 'numfloors']]
     df_pluto.dropna(inplace = True)
     # =============================================================================================== #
 
@@ -108,8 +108,8 @@ try:
     fig, ax = plt.subplots(figsize = (13, 11), dpi = 400)
     
     # Create scatter plot with color map
-    scatter = plt.scatter(df_pluto['longitude'], df_pluto['latitude'], c = df_pluto['unitstotal'], 
-                          cmap = 'magma', vmin = df_pluto['unitstotal'].min(), vmax = 150.0, s = 1.0)
+    scatter = plt.scatter(df_pluto['longitude'], df_pluto['latitude'], c = df_pluto['numfloors'], 
+                          cmap = 'magma', vmin = df_pluto['numfloors'].min(), vmax = 80.0, s = 1.0)
 
     # Add color bar
     cbar = plt.colorbar(scatter)
@@ -122,8 +122,8 @@ try:
     ax.set_xlim(-74.01, -73.86)
     ax.set_ylim(40.75, 40.88)
     ax.axis('off')
-    cbar.ax.set_ylabel('HAG')
-    fig.savefig('../../plots/rgb_image_with_colormap_of_hag.png', bbox_inches = 'tight')
+    cbar.ax.set_ylabel('Number of floors')
+    fig.savefig('../../plots/rgb_image_with_colormap_of_numfloors.png', bbox_inches = 'tight')
     # =============================================================================================== #
     
 except Exception as e:

@@ -37,6 +37,7 @@ def save_object(file_path, obj):
     except Exception as e:
         raise CustomException(e, sys)
     
+# Function that performs a GridSearchCV or a RandomizedSearchCV
 def evaluate_models(X_train, y_train, X_test, y_test, model, parameters, n_iterations = None):
     try:
         # Instantiate model

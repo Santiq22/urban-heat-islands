@@ -10,7 +10,6 @@ import pandas as pd
 from astropy.time import Time
 from astropy.coordinates import get_sun, AltAz, EarthLocation
 import astropy.units as u
-#from datetime import datetime
 # =============================================================================================== #
 
 # ======================================== Main classes ========================================= #
@@ -132,6 +131,3 @@ if __name__ == "__main__":
     obj = DataIngestion(utcoffset, mean_lat, mean_lon, mean_alt)
     
     data = obj.initiate_data_ingestion()
-    
-    #data_transformation = DataTransformation()
-    #_ = data_transformation.initiate_data_transformation(raw_data)

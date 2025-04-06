@@ -95,10 +95,10 @@ class DataSMOTEResampling:
 # =============================================================================================== #
 
 if __name__ == "__main__":
-    path = '../../data/final_datasets/transformed_datasets/transformed_reduced_corr_training_data.csv'
+    path = '../../data/final_datasets/transformed_datasets/transformed_reduced_training_data.csv'
     bins = 77
     random_state = 10
-    output = 'transformed_reduced_corr_smote_training_data.csv'
+    output = 'transformed_reduced_smote_training_data.csv'
     
     obj = DataSMOTEResampling(path, bins, random_state, output)
     path_to_data = obj.initiate_smote_resampling()

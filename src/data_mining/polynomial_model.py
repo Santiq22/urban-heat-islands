@@ -5,7 +5,6 @@ sys.path.insert(0, os.path.join(os.getcwd(), '../', '../'))
 from src.exception import CustomException
 from src.logger import logging
 from dataclasses import dataclass
-from numpy import array, hstack
 from pandas import read_csv, concat, DataFrame
 from sklearn.preprocessing import PolynomialFeatures
 # =============================================================================================== #

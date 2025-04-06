@@ -4,3 +4,6 @@ deprecated_datasets/
 
 # Logs
 *.log
+
+# Other files
+notes.txt

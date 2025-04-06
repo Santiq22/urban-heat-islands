@@ -438,6 +438,3 @@ if __name__ == "__main__":
     
     obj = DataIngestion(l_l, u_r, t_w, coll, clouds, res, bands)
     raw_data = obj.initiate_data_ingestion()
-    
-    #data_transformation = DataTransformation()
-    #_ = data_transformation.initiate_data_transformation(raw_data)

@@ -35,7 +35,7 @@ class DataIngestion:
             # Drop the NaN values of the latitude and longitude columns
             df.dropna(subset = ['latitude', 'longitude'], inplace = True)
             
-            # Get indeces of
+            # Get index of the mode of the unitstotal column
             idx_mode = argmax(unique(df['unitstotal'].values, return_counts = True)[1])
             
             # Compute the mode of the unitstotal column
