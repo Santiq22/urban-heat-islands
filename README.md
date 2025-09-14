@@ -2,7 +2,7 @@
 
 This repository contains all materials developed for the **EY Open Science AI and Data Challenge 2025: Cooling Urban Heat Islands**.
 
-The main aim of the project is to **predict Urban Heat Island (UHI) intensity in New York City (Bronx and Manhattan) using satellite, weather, building, and demographic data**, and to design reproducible workflows for data integration, transformation, and modeling, contributing to data-driven strategies for urban cooling and climate resilience.
+The main aim of the project is to **predict the Urban Heat Island (UHI) index in New York City (Bronx and Manhattan) using satellite, weather, building, and demographic data**, and to design reproducible workflows for data integration, transformation, and modeling, contributing to data-driven strategies for urban cooling and climate resilience.
 
 ---
 
@@ -15,7 +15,7 @@ This project focuses on:
 - Collecting, cleaning, and integrating multi-source geospatial and meteorological datasets.  
 - Engineering features related to land cover, building density, and population.  
 - Testing machine learning models for predicting UHI index values.  
-- Creating visualizations to better understand patterns and drivers of UHI.  
+- Creating visualizations to better understand patterns and drivers of UHIs.  
 
 ---
 
@@ -42,8 +42,8 @@ These datasets are organized into **raw**, **transformed**, and **final** versio
 The `src/components` folder contains scripts to automate ingestion, transformation, and feature engineering:
 
 1. **Ingestion & conversion**  
-   - Satellite bands extraction (Sentinel, Landsat), convert GeoTIFFs to CSV.  
-   - Combine satellite, building, demographic, and weather data.  
+   - Satellite bands extraction (Sentinel, Landsat) and convertion of GeoTIFFs to CSV.  
+   - Merge satellite, building, demographic, and weather data.  
 
 2. **Feature Engineering**  
    - Random datetime generator for test set alignment.  
@@ -63,7 +63,7 @@ Several models were benchmarked and trained, using the scripts in `src/data_mini
   
 - **Correlations analysis** for dimensionality reduction.  
 - **K-Means clustering** on transformed data to identify UHI patterns.  
-- **Model trainer** with hyperparameter search.  
+- **Model trainer** with hyperparameter tuning.  
 
 ---
 
@@ -72,8 +72,8 @@ Several models were benchmarked and trained, using the scripts in `src/data_mini
 Plots and notebooks provide exploratory analysis and visual summaries:
 
 - **EDA** of weather data and final datasets.  
-- **Spatial visualizations**: RGB maps of Manhattan/Bronx with UHI and building heights. Heatmap of Sentinel and Landsat indeces spatial distribution.
-- **Model evaluation**: Learning curves, feature importance plots.  
+- **Spatial visualizations**: RGB maps of Manhattan/Bronx with UHI indeces and building heights. Heatmap of Sentinel and Landsat indeces spatial distribution.
+- **Model evaluation**: Learning curves and feature importance plots.  
 
 All generated figures are collected in the `plots/` folder.
 
@@ -89,7 +89,6 @@ Relevant bibliography and sources are in the `bibliography/` folder.
 
 - `.gitignore`: Ignores of the repo.
 - `env-ey25.yml`: File to set up the conda environment needed to the challenge.
-- `notes.txt`: Text file to write some stuff and important things.
 - bibliography: All the bibliography and references used in the competition.
 - data: Easy and light data. The main/raw data has to be saved locally or downloaded at running time.
 
