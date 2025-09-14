@@ -1,8 +1,91 @@
-# urban-heat-islands
+# Urban Heat Islands – EY Open Science AI & Data Challenge 2025
 
-Repository containing the material needed in the 2025 EY Open Science AI and Data Challenge: Cooling Urban Heat Islands
+This repository contains all materials developed for the **EY Open Science AI and Data Challenge 2025: Cooling Urban Heat Islands**.
 
-### Repo structure and files
+The main aim of the project is to **predict Urban Heat Island (UHI) intensity in New York City (Bronx and Manhattan) using satellite, weather, building, and demographic data**, and to design reproducible workflows for data integration, transformation, and modeling, contributing to data-driven strategies for urban cooling and climate resilience.
+
+---
+
+## 🔎 Project Overview
+
+Urban Heat Islands are areas where urban structures (buildings, roads, infrastructure) cause higher temperatures compared to surrounding rural areas.  
+
+This project focuses on:
+
+- Collecting, cleaning, and integrating multi-source geospatial and meteorological datasets.  
+- Engineering features related to land cover, building density, and population.  
+- Testing machine learning models for predicting UHI index values.  
+- Creating visualizations to better understand patterns and drivers of UHI.  
+
+---
+
+## 📊 Data Sources
+
+The project leverages multiple datasets from satellites, weather stations, and census information:
+
+- **Challenge datasets**: Training and test sets with UHI index, lat/long, and datetime values.  
+- **Satellite Data**:
+  - *Sentinel-2* and *Landsat* indices extracted for target locations.
+- **Weather data**:
+  - High-resolution meteorological data (NY Mesonet) including solar position, temperature, humidity, and wind for Bronx and Manhattan.
+- **Urban and demographic data**:
+  - Building footprints (`.kml` + CSV).
+  - PLUTO dataset (building features) with floors/units per building.
+  - Population counts from US Census Blocks.  
+
+These datasets are organized into **raw**, **transformed**, and **final** versions, with additional grids for spatial smoothing.
+
+---
+
+## ⚙️ Data Processing Workflow
+
+The `src/components` folder contains scripts to automate ingestion, transformation, and feature engineering:
+
+1. **Ingestion & conversion**  
+   - Satellite bands extraction (Sentinel, Landsat), convert GeoTIFFs to CSV.  
+   - Combine satellite, building, demographic, and weather data.  
+
+2. **Feature Engineering**  
+   - Random datetime generator for test set alignment.  
+   - Grid generator + moving means to smooth spatial variables.  
+   - Polynomial features.  
+   - PCA transformations.  
+   - SMOTE-based oversampling for class balancing.  
+
+3. **Dataset Preparation**  
+   - Creation of training and submission-ready test datasets.  
+
+---
+
+## 🤖 Modeling Approach
+
+Several models were benchmarked and trained, using the scripts in `src/data_mining` and notebooks:
+  
+- **Correlations analysis** for dimensionality reduction.  
+- **K-Means clustering** on transformed data to identify UHI patterns.  
+- **Model trainer** with hyperparameter search.  
+
+---
+
+## 📈 Visualizations
+
+Plots and notebooks provide exploratory analysis and visual summaries:
+
+- **EDA** of weather data and final datasets.  
+- **Spatial visualizations**: RGB maps of Manhattan/Bronx with UHI and building heights. Heatmap of Sentinel and Landsat indeces spatial distribution.
+- **Model evaluation**: Learning curves, feature importance plots.  
+
+All generated figures are collected in the `plots/` folder.
+
+---
+
+## 📚 References
+
+Relevant bibliography and sources are in the `bibliography/` folder.
+
+---
+
+## 📂 Repo structure and files
 
 - `.gitignore`: Ignores of the repo.
 - `env-ey25.yml`: File to set up the conda environment needed to the challenge.
